@@ -68,4 +68,4 @@ jobs:
 
       - name: build with maven
         #        Skip integration tests. TestContainers does not support Windows Server 2019: https://github.com/testcontainers/testcontainers-java/issues/2960
-        run: mvn -B formatter:validate test --file pom.xml
+        run: mvn -B test --file pom.xml

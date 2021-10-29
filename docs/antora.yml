@@ -1,0 +1,5 @@
+name: quarkus-reactive-messaging-http
+title: Quarkus - Reactive Messaging Http
+version: dev
+nav:
+  - modules/ROOT/nav.adoc

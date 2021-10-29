@@ -16,6 +16,10 @@
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc-deployment</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jackson-deployment</artifactId>
         </dependency>
         <dependency>
@@ -27,8 +31,9 @@
             <artifactId>quarkus-smallrye-reactive-messaging-deployment</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.quarkus</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>quarkus-reactive-messaging-http</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -84,5 +89,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

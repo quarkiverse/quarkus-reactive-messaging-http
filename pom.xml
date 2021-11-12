@@ -32,7 +32,7 @@
             <dependency>
                 <groupId>io.quarkus.platform</groupId>
                 <artifactId>quarkus-bom</artifactId>
-                <version>2.4.0.Final</version>
+                <version>2.4.2.Final</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

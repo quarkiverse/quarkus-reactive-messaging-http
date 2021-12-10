@@ -1,11 +1,16 @@
 # Quarkus Extension for Reactive Messaging with HTTP
 
+[![Version](https://img.shields.io/maven-central/v/io.quarkiverse.reactivemessaging.http/quarkus-reactive-messaging-http?logo=apache-maven&style=flat-square)](https://search.maven.org/artifact/io.quarkiverse.reactivemessaging.http/quarkus-reactive-messaging-http)
+
 This project is a Quarkus extension that lets you utilize SmallRye Reactive Messaging to consume and produce HTTP and WebSocket messages
 
-This extension was previously a part of the [core Quarkus repository](https://github.com/quarkusio/quarkus)
+This extension was previously a part of the [core Quarkus repository](https://github.com/quarkusio/quarkus).
+
+## Documentation
+
+Documentation for the project can be found on the [Quarkiverse Documentation website](https://quarkiverse.github.io/quarkiverse-docs/quarkus-reactive-messaging-http/dev/index.html).
 
 ## Contributing
-
 
 You can find the basic info, Quarkiverse policies and conventions in [the Quarkiverse wiki](https://github.com/quarkiverse/quarkiverse/wiki).
 

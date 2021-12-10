@@ -33,6 +33,7 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.ClassOutput;
@@ -63,6 +64,8 @@ import io.vertx.ext.web.RoutingContext;
 
 public class ReactiveHttpProcessor {
 
+    private static final String FEATURE = "smallrye-reactive-messaging-http";
+
     private static final DotName JSON_ARRAY = DotName.createSimple(JsonArray.class.getName());
     private static final DotName JSON_OBJECT = DotName.createSimple(JsonObject.class.getName());
     private static final DotName MESSAGE = DotName.createSimple(Message.class.getName());
@@ -73,6 +76,11 @@ public class ReactiveHttpProcessor {
     private static final DotName PUBLISHER_BUILDER = DotName.createSimple(PublisherBuilder.class.getName());
     private static final DotName SUBSCRIBER = DotName.createSimple(Subscriber.class.getName());
     private static final DotName SUBSCRIBER_BUILDER = DotName.createSimple(SubscriberBuilder.class.getName());
+
+    @BuildStep
+    FeatureBuildItem feature() {
+        return new FeatureBuildItem(FEATURE);
+    }
 
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)

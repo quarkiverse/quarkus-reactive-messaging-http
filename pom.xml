@@ -10,10 +10,11 @@
     <artifactId>quarkus-reactive-messaging-http-parent</artifactId>
     <version>1.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Quarkus - Reactive Messaging - HTTP and WebSockets - Parent</name>
+    <name>Quarkus - SmallRye Reactive Messaging - HTTP and WebSockets - Parent</name>
     <modules>
         <module>deployment</module>
         <module>runtime</module>
+        <module>docs</module>
     </modules>
     <properties>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
@@ -24,8 +25,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <quarkus.version>2.5.1.Final</quarkus.version>
     </properties>
-
-
 
     <dependencyManagement>
         <dependencies>
@@ -52,27 +51,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>net.revelc.code.formatter</groupId>
-                <artifactId>formatter-maven-plugin</artifactId>
-                <version>2.17.1</version>
-                <dependencies>
-                    <dependency>
-                        <artifactId>quarkus-ide-config</artifactId>
-                        <groupId>io.quarkus</groupId>
-                        <version>${quarkus.version}</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <!-- store outside of target to speed up formatting when mvn clean is used -->
-                    <cachedir>.cache</cachedir>
-                    <configFile>eclipse-format.xml</configFile>
-                    <lineEnding>LF</lineEnding>
-                    <skip>${format.skip}</skip>
-                </configuration>
-            </plugin>
-        </plugins>
     </build>
     <profiles>
         <profile>

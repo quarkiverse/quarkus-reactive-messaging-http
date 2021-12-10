@@ -1,5 +1,6 @@
 = Quarkus - Reactive Messaging HTTP
-:extension-status: preview
+
+include::./includes/attributes.adoc[]
 
 Quarkus Reactive Messaging HTTP is a Quarkus extension that brings in
 support for HTTP and WebSocket for Reactive Messaging.
@@ -9,21 +10,28 @@ support for HTTP and WebSocket for Reactive Messaging.
 If you want to use this extension, you need to add the `io.quarkiverse.reactive-messaging-http:quarkus-reactive-messaging-http` extension first.
 In your `pom.xml` file, add:
 
-[source,xml]
+[source,xml,subs=attributes+]
 ----
 <dependency>
     <groupId>io.quarkiverse.reactive-messaging-http</groupId>
     <artifactId>quarkus-reactive-messaging-http</artifactId>
+    <version>{project-version}</version>
 </dependency>
 ----
 
 == Using the extension
 The extension contains two Reactive Messaging connectors, specific pages describe how to use each of them:
 
-* xref:reactive-messaging-http.adoc[]
-* xref:reactive-messaging-websocket.adoc[]
-
+* xref:reactive-messaging-http.adoc[Reactive Messaging HTTP]
+* xref:reactive-messaging-websocket.adoc[Reactive Messaging WebSocket]
 
 [[extension-configuration-reference]]
 == Extension Configuration Reference
-include::config.adoc[leveloffset=+1, opts=optional]
+
+[WARNING]
+====
+For now, the configuration reference is not automatically generated.
+====
+
+include::includes/quarkus-reactive-messaging-http.adoc[opts=optional]
+

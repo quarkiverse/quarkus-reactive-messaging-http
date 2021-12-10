@@ -56,7 +56,7 @@ jobs:
           key: maven-repo-${{ runner.os }}-${{ steps.get-date.outputs.date }}
 
       - name: Build with Maven
-        run: mvn -B formatter:validate verify --file pom.xml
+        run: mvn -B formatter:validate verify --file pom.xml -Dnative
 
   build-windows:
     runs-on: windows-latest

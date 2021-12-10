@@ -16,7 +16,7 @@ env:
   # Repo specific setting #
   #########################
 
-  ECOSYSTEM_CI_REPO_PATH: quarkus-reactive-messaging-http
+  ECOSYSTEM_CI_REPO_PATH: quarkiverse-reactive-messaging-http
 
 jobs:
   build:

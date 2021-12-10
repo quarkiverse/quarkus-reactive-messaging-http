@@ -7,8 +7,8 @@
         <version>1.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>quarkus-reactive-messaging-http-integration-tests</artifactId>
-    <name>Quarkus - Integration Tests - Reactive Messaging HTTP</name>
-    <description>Integration tests for the reactive messaging HTTP and Web Sockets extension</description>
+    <name>Quarkus - SmallRye Reactive Messaging - HTTP and WebSockets - Integration Tests</name>
+    <description>Integration tests for the Reactive Messaging HTTP and WebSockets extension</description>
 
     <dependencies>
         <dependency>

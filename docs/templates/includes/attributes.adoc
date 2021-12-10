@@ -1,4 +1,5 @@
-:quarkus-version: 2.5.1.Final
+:quarkus-version: ${quarkus.version}
+:project-version: ${release.current-version}
 :maven-version: 3.8.1+
 
 :quarkus-org-url: https://github.com/quarkusio
@@ -13,5 +14,3 @@
 :quickstarts-archive-url: https://github.com/quarkusio/quarkus-quickstarts/archive/main.zip
 :quickstarts-blob-url: https://github.com/quarkusio/quarkus-quickstarts/blob/main
 :quickstarts-tree-url: https://github.com/quarkusio/quarkus-quickstarts/tree/main
-
-:imagesdir: ../images

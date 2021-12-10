@@ -1,6 +1,6 @@
 = Using HTTP with Reactive Messaging
 
-include::./attributes.adoc[]
+include::./includes/attributes.adoc[]
 
 This guide demonstrates how your Quarkus application can utilize SmallRye Reactive Messaging to
 consume and produce HTTP messages.

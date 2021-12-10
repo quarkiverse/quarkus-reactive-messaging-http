@@ -10,8 +10,7 @@
 
     <artifactId>quarkus-reactive-messaging-http</artifactId>
     <name>Quarkus - SmallRye Reactive Messaging - HTTP and WebSockets - Runtime</name>
-    <description>Connect to HTTP or Web Socket and expose HTTP or Web Socket endpoints for Reactive Messaging
-    </description>
+    <description>Connect to HTTP or WebSocket and expose HTTP or WebSocket endpoints for Reactive Messaging</description>
 
     <dependencies>
         <dependency>

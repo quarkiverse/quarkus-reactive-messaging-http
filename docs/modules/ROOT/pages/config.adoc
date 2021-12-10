@@ -1,5 +1,0 @@
-//
-// This content is generated using mvn compile and copied manually to here
-//
-[.configuration-legend]
-icon:lock[title=Fixed at build time] Configuration property fixed at build time - All other configuration properties are overridable at runtime

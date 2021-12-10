@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.quarkiverse.reactivemessaging.http</groupId>
         <artifactId>quarkus-reactive-messaging-http-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>quarkus-reactive-messaging-http-integration-tests</artifactId>
     <name>Quarkus - Integration Tests - Reactive Messaging HTTP</name>
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>io.quarkiverse.reactivemessaging.http</groupId>
             <artifactId>quarkus-reactive-messaging-http-deployment</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1-SNAPSHOT</version>
             <type>pom</type>
             <scope>test</scope>
             <exclusions>

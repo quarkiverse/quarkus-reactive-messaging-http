@@ -1,1 +1,3 @@
-* xref:index.adoc[Quarkus - Reactive Messaging Http]
+* xref:index.adoc[Introduction]
+* xref:reactive-messaging-http.adoc[Reactive Messaging HTTP]
+* xref:reactive-messaging-websocket.adoc[Reactive Messaging WebSocket]

@@ -169,6 +169,19 @@ mp.messaging.incoming.incoming-costs.path=/costs
 mp.messaging.incoming.incoming-costs.method=POST
 ----
 
+=== Broadcast to multiple subscribers
+
+In case single channel should deliver message to multiple subscribers (methods annotated with `@Incoming`) 
+then additional property needs to be set
+
+[source,properties]
+----
+mp.messaging.incoming.incoming-costs.broadcast=true
+
+----
+
+This will allow to deliver single message to all subscribers of that channel.
+
 
 == The CostCollector
 To illustrate that converting messages and passing them through works, let's add an endpoint that will

@@ -41,7 +41,7 @@ import io.vertx.core.http.HttpMethod;
 @ConnectorAttribute(name = "method", type = "string", direction = INCOMING_AND_OUTGOING, description = "The HTTP method (either `POST` or `PUT`)", defaultValue = "POST")
 @ConnectorAttribute(name = "path", type = "string", direction = INCOMING, description = "The path of the endpoint", mandatory = true)
 @ConnectorAttribute(name = "buffer-size", type = "string", direction = INCOMING, description = "HTTP endpoint buffers messages if a consumer is not able to keep up. This setting specifies the size of the buffer.", defaultValue = QuarkusHttpConnector.DEFAULT_SOURCE_BUFFER_STR)
-@ConnectorAttribute(name = "broadcast", type = "boolean", direction = INCOMING, description = "Whether the messages should be dispatched to multiple consumer", defaultValue = "false")
+@ConnectorAttribute(name = "broadcast", type = "boolean", direction = INCOMING, description = "Whether the messages should be dispatched to multiple consumers", defaultValue = "false")
 
 @Connector(QuarkusHttpConnector.NAME)
 @ApplicationScoped

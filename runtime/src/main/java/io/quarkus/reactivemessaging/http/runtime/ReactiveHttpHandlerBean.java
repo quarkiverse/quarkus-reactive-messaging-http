@@ -59,7 +59,11 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
         } else if (guard.prepareToEmit()) {
             try {
                 HttpMessage<Buffer> message = new HttpMessage<>(event.getBody(), new IncomingHttpMetadata(event.request()),
-                        () -> event.response().setStatusCode(202).end(),
+                        () -> {
+                            if (!event.response().ended()) {
+                                event.response().setStatusCode(202).end();
+                            }
+                        },
                         error -> onUnexpectedError(event, error, "Failed to process message."));
                 emitter.emit(message);
             } catch (Exception any) {
@@ -72,8 +76,10 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
     }
 
     private void onUnexpectedError(RoutingContext event, Throwable error, String message) {
-        event.response().setStatusCode(500).end("Unexpected error while processing the message");
-        log.error(message, error);
+        if (!event.response().ended()) {
+            event.response().setStatusCode(500).end("Unexpected error while processing the message");
+            log.error(message, error);
+        }
     }
 
     private String key(String path, HttpMethod method) {

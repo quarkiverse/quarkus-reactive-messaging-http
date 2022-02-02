@@ -33,6 +33,7 @@ import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
 import io.quarkus.deployment.annotations.Record;
+import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.gizmo.ClassCreator;
@@ -88,7 +89,10 @@ public class ReactiveHttpProcessor {
             BuildProducer<GeneratedBeanBuildItem> generatedBeanProducer,
             BuildProducer<RouteBuildItem> routeProducer,
             BodyHandlerBuildItem bodyHandler,
-            ReactiveHttpRecorder recorder) {
+            ReactiveHttpRecorder recorder,
+            // keep the indexBuildItem to control the order of build steps, any other build step that contributes to 
+            // CombinedIndex will be invoked before this build step
+            CombinedIndexBuildItem indexBuildItem) {
         beanProducer.produce(new AdditionalBeanBuildItem(QuarkusHttpConnector.class));
         beanProducer.produce(new AdditionalBeanBuildItem(QuarkusWebSocketConnector.class));
         beanProducer.produce(new AdditionalBeanBuildItem(ReactiveHttpConfig.class));

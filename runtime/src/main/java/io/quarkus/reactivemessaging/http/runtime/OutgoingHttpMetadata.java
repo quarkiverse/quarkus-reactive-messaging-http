@@ -21,15 +21,15 @@ public class OutgoingHttpMetadata {
         this.headers = headers;
     }
 
-    Map<String, List<String>> getHeaders() {
+    public Map<String, List<String>> getHeaders() {
         return headers;
     }
 
-    Map<String, List<String>> getQuery() {
+    public Map<String, List<String>> getQuery() {
         return query;
     }
 
-    Map<String, String> getPathParameters() {
+    public Map<String, String> getPathParameters() {
         return pathParameters;
     }
 

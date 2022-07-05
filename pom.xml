@@ -23,7 +23,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <jandex-plugin.version>1.2.2</jandex-plugin.version>
+        <jandex-plugin.version>1.2.3</jandex-plugin.version>
         <quarkus.version>2.9.2.Final</quarkus.version>
         <assertj.version>3.23.1</assertj.version>
     </properties>

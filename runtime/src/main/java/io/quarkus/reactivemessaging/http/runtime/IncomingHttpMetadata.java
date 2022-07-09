@@ -3,16 +3,18 @@ package io.quarkus.reactivemessaging.http.runtime;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * Metadata for Http Source. Provides a way to get headers, method and path from a http request
  */
-public class IncomingHttpMetadata {
+public class IncomingHttpMetadata extends RequestMetadata {
 
     private final HttpServerRequest request;
 
-    IncomingHttpMetadata(HttpServerRequest request) {
-        this.request = request;
+    IncomingHttpMetadata(RoutingContext rc) {
+        super(rc);
+        this.request = rc.request();
     }
 
     /**

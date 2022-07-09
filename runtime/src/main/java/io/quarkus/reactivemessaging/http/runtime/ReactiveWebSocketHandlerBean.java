@@ -44,6 +44,7 @@ public class ReactiveWebSocketHandlerBean extends ReactiveHandlerBeanBase<WebSoc
                                     } else if (guard.prepareToEmit()) {
                                         try {
                                             emitter.emit(new WebSocketMessage<>(b,
+                                                    new RequestMetadata(event),
                                                     () -> serverWebSocket.write(Buffer.buffer("ACK")),
                                                     error -> onUnexpectedError(serverWebSocket, error,
                                                             "Failed to process incoming web socket message.")));
@@ -71,7 +72,7 @@ public class ReactiveWebSocketHandlerBean extends ReactiveHandlerBeanBase<WebSoc
 
     @Override
     protected String key(RoutingContext context) {
-        return context.normalizedPath();
+        return context.currentRoute().getPath();
     }
 
     @Override

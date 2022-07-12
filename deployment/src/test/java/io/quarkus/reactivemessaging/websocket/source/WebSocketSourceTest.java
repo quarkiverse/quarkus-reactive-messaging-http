@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,11 +22,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import io.quarkus.reactivemessaging.http.runtime.RequestMetadata;
 import io.quarkus.reactivemessaging.utils.VertxFriendlyLock;
 import io.quarkus.reactivemessaging.websocket.WebSocketClient;
 import io.quarkus.reactivemessaging.websocket.source.app.Consumer;
 import io.quarkus.test.QuarkusUnitTest;
 import io.quarkus.test.common.http.TestHTTPResource;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 
 class WebSocketSourceTest {
@@ -48,11 +51,17 @@ class WebSocketSourceTest {
     @TestHTTPResource("my-ws-buffer-13")
     URI wsSourceBuffer13Uri;
 
+    @TestHTTPResource("/shoes/stiletto")
+    URI wsSourceUriWithPathParam;
+
+    @TestHTTPResource("/shoes/stiletto?color=red")
+    URI wsSourceUriWithQueryParam;
+
     @Inject
     Consumer consumer;
 
     @Test
-    void shouldPassTextContentAndHeaders() {
+    void shouldPassTextContent() {
         client.connect(wsSourceUri).send("test-message");
 
         await("wait for message to be consumed")
@@ -60,6 +69,50 @@ class WebSocketSourceTest {
                 .until(() -> consumer.getMessages(), hasSize(1));
         String payload = consumer.getMessages().get(0);
         assertThat(payload).isEqualTo("test-message");
+    }
+
+    @Test
+    void shouldPassPathParamsAndValidateConfiguredPath() {
+        client.connect(wsSourceUriWithPathParam).send("test-message");
+
+        await("wait for message to be consumed")
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> consumer.getMessages(), hasSize(1));
+        String payload = consumer.getMessages().get(0);
+        assertThat(payload).isEqualTo("test-message");
+
+        assertThat(consumer.getRequestMetadata()).isNotNull();
+        RequestMetadata m = consumer.getRequestMetadata();
+
+        assertThat(m.getConfiguredPath()).isNotNull();
+        assertThat(m.getConfiguredPath()).isNotEmpty();
+        assertThat(m.getConfiguredPath()).isEqualTo("/shoes/:shoetype");
+        assertThat(m.getInvokedPath()).isNotNull();
+        assertThat(m.getInvokedPath()).isNotEmpty();
+        assertThat(m.getInvokedPath()).isEqualTo("/shoes/stiletto");
+
+        assertThat(m.getPathParams()).isNotNull();
+        Map<String, String> params = m.getPathParams();
+        assertThat(params).hasSize(1);
+        assertThat(params.keySet()).contains("shoetype");
+        assertThat(params.get("shoetype")).isEqualTo("stiletto");
+    }
+
+    @Test
+    void shouldPassQueryParams() {
+        client.connect(wsSourceUriWithQueryParam).send("test-message");
+
+        await("wait for message to be consumed")
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> consumer.getMessages(), hasSize(1));
+        String payload = consumer.getMessages().get(0);
+        assertThat(payload).isEqualTo("test-message");
+
+        assertThat(consumer.getRequestMetadata()).isNotNull();
+        assertThat(consumer.getRequestMetadata().getPathParams()).isNotNull();
+        MultiMap params = consumer.getRequestMetadata().getQueryParams();
+        assertThat(params.contains("color")).isTrue();
+        assertThat(params.get("color")).isEqualTo("red");
     }
 
     @Test

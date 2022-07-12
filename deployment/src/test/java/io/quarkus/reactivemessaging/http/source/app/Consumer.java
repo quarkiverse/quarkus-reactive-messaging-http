@@ -49,6 +49,18 @@ public class Consumer {
         return result;
     }
 
+    @Incoming("post-http-source-with-pathparam")
+    public CompletionStage<Void> process2(Message<?> message) {
+        CompletableFuture<Void> result = new CompletableFuture<>();
+
+        lock.triggerWhenUnlocked(() -> {
+            postMessages.add(message);
+            message.ack();
+            result.complete(null);
+        }, 10000);
+        return result;
+    }
+
     @Incoming("put-http-source")
     @Acknowledgment(Acknowledgment.Strategy.POST_PROCESSING)
     public CompletionStage<Void> processPut(Message<?> message) {

@@ -11,12 +11,14 @@ import javax.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 
+import io.quarkus.reactivemessaging.http.runtime.RequestMetadata;
 import io.quarkus.reactivemessaging.utils.VertxFriendlyLock;
 import io.vertx.core.Vertx;
 
 @ApplicationScoped
 public class Consumer {
 
+    private RequestMetadata requestMetadata = null;
     private final List<String> messages = new ArrayList<>();
     private final List<Dto> dtos = new ArrayList<>();
 
@@ -56,8 +58,25 @@ public class Consumer {
         return result;
     }
 
+    @Incoming("my-ws-pathparam")
+    public CompletionStage<Void> processWithPathParam(Message<String> message) {
+        CompletableFuture<Void> result = new CompletableFuture<>();
+
+        lock.triggerWhenUnlocked(() -> {
+            messages.add(message.getPayload());
+            requestMetadata = message.getMetadata(RequestMetadata.class).get();
+            message.ack();
+            result.complete(null);
+        }, 10000);
+        return result;
+    }
+
     public List<String> getMessages() {
         return messages;
+    }
+
+    public RequestMetadata getRequestMetadata() {
+        return requestMetadata;
     }
 
     public void pause() {
@@ -70,6 +89,7 @@ public class Consumer {
 
     public void clear() {
         messages.clear();
+        requestMetadata = null;
         lock.reset();
     }
 

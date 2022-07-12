@@ -25,13 +25,14 @@ public class WebSocketClient {
 
     public WsConnection connect(URI uri, long timeout, TimeUnit unit) {
         CompletableFuture<WebSocket> webSocket = new CompletableFuture<>();
-        vertx.createHttpClient().webSocket(uri.getPort(), uri.getHost(), uri.getPath(), ws -> {
-            if (ws.succeeded()) {
-                webSocket.complete(ws.result());
-            } else {
-                webSocket.completeExceptionally(ws.cause());
-            }
-        });
+        vertx.createHttpClient().webSocket(uri.getPort(), uri.getHost(),
+                uri.getPath() + (uri.getQuery() != null ? "?" + uri.getQuery() : ""), ws -> {
+                    if (ws.succeeded()) {
+                        webSocket.complete(ws.result());
+                    } else {
+                        webSocket.completeExceptionally(ws.cause());
+                    }
+                });
         try {
             return new WsConnection(webSocket.get(timeout, unit));
         } catch (InterruptedException | ExecutionException | TimeoutException e) {

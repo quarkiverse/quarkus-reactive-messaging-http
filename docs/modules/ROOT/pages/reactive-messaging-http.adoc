@@ -42,8 +42,8 @@ First, we need a new project. Create a new project with the following command:
 mvn io.quarkus.platform:quarkus-maven-plugin:{quarkus-version}:create \
     -DprojectGroupId=org.acme \
     -DprojectArtifactId=reactive-messaging-http-quickstart \
-    -Dextensions="reactive-messaging-http" \
-    -DnoExamples
+    -Dextensions="reactive-messaging-http,reasteasy-reactive-jackson" \
+    -DnoCode
 cd reactive-messaging-http-quickstart
 ----
 
@@ -92,8 +92,6 @@ public class CostConverter {
         return conversionRatio * cost.getValue();
     }
 }
-
-
 ----
 <1> Consume messages from the `incoming-costs` stream.
 <2> Dispatch returned values to the `outgoing-costs` stream.
@@ -126,10 +124,7 @@ public class Cost {
         this.currency = currency;
     }
 }
-
 ----
-
-
 
 In the next step, we will create configurations for both streams in the `application.properties` file.
 

@@ -90,7 +90,7 @@ public class ReactiveHttpProcessor {
             BuildProducer<RouteBuildItem> routeProducer,
             BodyHandlerBuildItem bodyHandler,
             ReactiveHttpRecorder recorder,
-            // keep the indexBuildItem to control the order of build steps, any other build step that contributes to 
+            // keep the indexBuildItem to control the order of build steps, any other build step that contributes to
             // CombinedIndex will be invoked before this build step
             CombinedIndexBuildItem indexBuildItem) {
         beanProducer.produce(new AdditionalBeanBuildItem(QuarkusHttpConnector.class));

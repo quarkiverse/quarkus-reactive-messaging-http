@@ -11,7 +11,7 @@ import org.eclipse.microprofile.reactive.messaging.Metadata;
 
 /**
  * used by http source
- * 
+ *
  * @param <T> payload type
  */
 class HttpMessage<T> implements Message<T> {

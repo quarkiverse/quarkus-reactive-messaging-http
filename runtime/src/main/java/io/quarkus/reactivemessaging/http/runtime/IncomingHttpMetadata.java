@@ -19,7 +19,7 @@ public class IncomingHttpMetadata extends RequestMetadata {
 
     /**
      * http method of the request
-     * 
+     *
      * @return either POST or PUT
      */
     public HttpMethod getMethod() {
@@ -28,7 +28,7 @@ public class IncomingHttpMetadata extends RequestMetadata {
 
     /**
      * headers of the request
-     * 
+     *
      * @return a MultiMap of headers
      */
     public MultiMap getHeaders() {
@@ -37,7 +37,7 @@ public class IncomingHttpMetadata extends RequestMetadata {
 
     /**
      * path of the request
-     * 
+     *
      * @return path
      */
     public String getPath() {

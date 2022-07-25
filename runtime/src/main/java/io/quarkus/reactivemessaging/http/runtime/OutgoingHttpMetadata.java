@@ -129,7 +129,7 @@ public class OutgoingHttpMetadata {
 
         /**
          * build the metadata object
-         * 
+         *
          * @return metadata
          */
         public OutgoingHttpMetadata build() {

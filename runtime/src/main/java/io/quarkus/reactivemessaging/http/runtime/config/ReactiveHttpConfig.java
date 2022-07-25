@@ -57,7 +57,7 @@ public class ReactiveHttpConfig {
 
     /**
      * Reads HTTP config, can be used in the build time
-     * 
+     *
      * @return list of HTTP configurations
      */
     public static List<HttpStreamConfig> readIncomingHttpConfigs() {
@@ -79,7 +79,7 @@ public class ReactiveHttpConfig {
 
     /**
      * Reads web socket config, can be used in the build time
-     * 
+     *
      * @return list of web socket configurations
      */
     public static List<WebSocketStreamConfig> readIncomingWebSocketConfigs() {
@@ -101,7 +101,7 @@ public class ReactiveHttpConfig {
 
     /**
      * Read custom serializer class names from the configuration
-     * 
+     *
      * @return list of custom serializer class names
      */
     public static List<String> readSerializers() {

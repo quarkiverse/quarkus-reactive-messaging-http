@@ -28,7 +28,7 @@ public interface Serializer<PayloadType> {
 
     /**
      * serialize the payload
-     * 
+     *
      * @param payload object to serialize
      * @return a buffer with serialized payload
      */
@@ -36,7 +36,7 @@ public interface Serializer<PayloadType> {
 
     /**
      * From serializers that can handle a specific payload, the one with the higher priority is used.
-     * 
+     *
      * @return the priority of the serializer
      */
     default int getPriority() {

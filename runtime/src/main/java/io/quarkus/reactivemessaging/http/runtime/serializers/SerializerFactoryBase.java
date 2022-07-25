@@ -41,7 +41,7 @@ public abstract class SerializerFactoryBase {
 
     /**
      * get a {@link Serializer} of a given (class) name or for a given payload type
-     * 
+     *
      * @param name name of the serializer
      * @param payload payload to serialize
      * @param <T> type of the payload

@@ -3,9 +3,12 @@ package io.quarkus.reactivemessaging.http.runtime;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
@@ -115,7 +118,10 @@ class HttpSink {
         try {
             OutgoingHttpMetadata metadata = message.getMetadata(OutgoingHttpMetadata.class).orElse((OutgoingHttpMetadata) null);
 
+            Map<String, String> cloudEventHeaders = HttpCloudEventHelper.getCloudEventHeaders(message);
             Map<String, List<String>> httpHeaders = metadata != null ? metadata.getHeaders() : Collections.emptyMap();
+            httpHeaders = safeAddAll(httpHeaders, cloudEventHeaders);
+
             Map<String, List<String>> query = metadata != null ? metadata.getQuery() : Collections.emptyMap();
             Map<String, String> pathParams = metadata != null ? metadata.getPathParameters() : Collections.emptyMap();
 
@@ -131,6 +137,23 @@ class HttpSink {
         } catch (Exception any) {
             log.error("Failed to transform message to http request", any);
             throw any;
+        }
+    }
+
+    private Map<String, List<String>> safeAddAll(Map<String, List<String>> httpHeaders,
+            Map<String, String> cloudEventHeaders) {
+        if (cloudEventHeaders.isEmpty()) {
+            return httpHeaders;
+        } else if (httpHeaders.isEmpty()) {
+            return cloudEventHeaders.entrySet().stream()
+                    .collect(Collectors.toMap(e -> e.getKey(), e -> List.<String> of(e.getValue())));
+        } else {
+            // httpHeaders might be inmutable
+            Map<String, List<String>> mergedMap = new HashMap<>(httpHeaders);
+            for (Entry<String, String> entry : cloudEventHeaders.entrySet()) {
+                httpHeaders.put(entry.getKey(), List.of(entry.getValue()));
+            }
+            return mergedMap;
         }
     }
 

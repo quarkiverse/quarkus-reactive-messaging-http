@@ -26,7 +26,8 @@ class HttpMessage<T> implements Message<T> {
         this.payload = payload;
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
-        metadata = Metadata.of(requestMetadata);
+        this.metadata = HttpCloudEventHelper.getBinaryCloudEvent(requestMetadata).map(m -> Metadata.of(requestMetadata, m))
+                .orElse(Metadata.of(requestMetadata));
     }
 
     @Override

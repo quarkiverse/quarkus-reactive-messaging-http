@@ -8,7 +8,7 @@
     </parent>
     <groupId>io.quarkiverse.reactivemessaging.http</groupId>
     <artifactId>quarkus-reactive-messaging-http-parent</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Quarkus - SmallRye Reactive Messaging - HTTP and WebSockets - Parent</name>
     <modules>
@@ -86,8 +86,4 @@
             </modules>
         </profile>
     </profiles>
-
-  <scm>
-    <tag>1.0.4</tag>
-  </scm>
 </project>

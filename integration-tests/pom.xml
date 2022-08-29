@@ -10,6 +10,9 @@
     <name>Quarkus - SmallRye Reactive Messaging - HTTP and WebSockets - Integration Tests</name>
     <description>Integration tests for the Reactive Messaging HTTP and WebSockets extension</description>
 
+    <properties>
+      <version.com.github.tomakehurst.wiremock>2.33.0</version.com.github.tomakehurst.wiremock>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -52,6 +55,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock-jre8</artifactId>
+            <version>${version.com.github.tomakehurst.wiremock}</version>
+            <scope>test</scope>
+         </dependency>
     </dependencies>
 
     <build>

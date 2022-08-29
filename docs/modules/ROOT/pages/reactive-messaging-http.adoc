@@ -348,6 +348,13 @@ mp.messaging.incoming.<channelName>.buffer-size=13
 
 ----
 
+=== Cloud Event support
+
+The HTTP connector supports binary-mode [cloud event] messages through Metadata.
+
+If incoming HTTP request contains headers of the form `ce-` or `ce_`, a `CloudEventMetadata` instance is included in the `Message` metadata
+
+If outgoing `Message` metadata includes a `CloudEventMetadata` instance, the information contained there will be added as headers prefixed with `ce-` in the outgoing HTTP request. 
 
 === Reactive Messaging
 This extension utilizes SmallRye Reactive Messaging to build data streaming applications.

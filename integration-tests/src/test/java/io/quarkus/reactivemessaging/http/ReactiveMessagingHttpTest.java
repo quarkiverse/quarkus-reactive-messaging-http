@@ -1,5 +1,6 @@
 package io.quarkus.reactivemessaging.http;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static io.restassured.RestAssured.delete;
@@ -15,8 +16,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.VerificationException;
-import com.github.tomakehurst.wiremock.client.WireMock;
 
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -30,17 +29,10 @@ public class ReactiveMessagingHttpTest {
 
     @Test
     void testCloudEvent() {
-        given().body("aBody").header("ce-type", "aType").post("/celistener");
-        await()
-                .atMost(2, TimeUnit.SECONDS).pollInterval(Duration.ofMillis(250)).until(() -> {
-                    try {
-                        cloudEventService.verify(postRequestedFor(urlEqualTo("/"))
-                                .withHeader("ce-" + CloudEventMetadata.CE_ATTRIBUTE_TYPE, WireMock.equalTo("aType")));
-                        return true;
-                    } catch (VerificationException ex) {
-                        return false;
-                    }
-                });
+        given().body("aBody").header("ce-type", "aType").header("ce-extension", "aExtension").post("/celistener");
+        await().timeout(Duration.ofSeconds(2)).untilAsserted(() -> cloudEventService.verify(postRequestedFor(urlEqualTo("/"))
+                .withHeader("ce-" + CloudEventMetadata.CE_ATTRIBUTE_TYPE, equalTo("aType"))
+                .withHeader("ce-extension", equalTo("aExtension"))));
     }
 
     @Test

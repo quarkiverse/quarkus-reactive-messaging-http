@@ -18,7 +18,6 @@ import io.smallrye.reactive.messaging.ce.DefaultCloudEventMetadataBuilder;
 import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadata;
 
 public class HttpCloudEventHelper {
-
     private static final Logger logger = LoggerFactory.getLogger(HttpCloudEventHelper.class);
 
     private static final String[] CE_PREFIXES = { "ce-", "ce_" };
@@ -49,7 +48,7 @@ public class HttpCloudEventHelper {
         }
         map.put(header(CloudEventMetadata.CE_ATTRIBUTE_SPEC_VERSION), metadata.getSpecVersion());
         map.put(header(CloudEventMetadata.CE_ATTRIBUTE_TYPE), metadata.getType());
-        metadata.getExtensions().forEach((k, v) -> map.put(k, v.toString()));
+        metadata.getExtensions().forEach((k, v) -> map.put(header(k), v.toString()));
         return map;
     }
 
@@ -63,7 +62,8 @@ public class HttpCloudEventHelper {
         for (String prefix : CE_PREFIXES) {
             if (lowerCase.startsWith(prefix)) {
                 try {
-                    switch (lowerCase.substring(prefix.length())) {
+                    String extractKey = lowerCase.substring(prefix.length());
+                    switch (extractKey) {
                         case CloudEventMetadata.CE_ATTRIBUTE_ID:
                             builder.withId(value);
                             break;
@@ -90,7 +90,7 @@ public class HttpCloudEventHelper {
                             break;
                         default:
                             logger.info("Unrecognized CE attribute {}, assuming extension", key);
-                            builder.withExtension(key, value);
+                            builder.withExtension(extractKey, value);
                     }
                     sucessfulSet = true;
                 } catch (IllegalArgumentException | DateTimeException ex) {

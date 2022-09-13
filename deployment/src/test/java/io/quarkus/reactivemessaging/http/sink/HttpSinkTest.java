@@ -30,6 +30,8 @@ import io.quarkus.reactivemessaging.http.sink.app.HttpEmitter;
 import io.quarkus.reactivemessaging.http.sink.app.HttpEndpoint;
 import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
 import io.quarkus.test.QuarkusUnitTest;
+import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadata;
+import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadataBuilder;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -95,6 +97,28 @@ class HttpSinkTest {
         assertThat(new JsonObject(request.getBody())).isEqualTo(new JsonObject().put("field", "foo"));
         assertThat(request.getHeaders()).contains(immutableEntry("myHeader", singletonList("myValue")));
         assertThat(request.getQueryParameters()).contains(immutableEntry("sort", singletonList("ASC")));
+    }
+
+    @Test
+    void shouldPassHeadersAndCloudEventMetaData() {
+        String id = "10";
+        OutgoingHttpMetadata metadata = new OutgoingHttpMetadata.Builder()
+                .addHeader("myHeader", "myValue")
+                .addPathParameter("id", id)
+                .addQueryParameter("sort", "ASC")
+                .build();
+        OutgoingCloudEventMetadata cloudEventMetadata = new OutgoingCloudEventMetadataBuilder()
+                .withSubject("testSubject").withType("testType").build();
+        emitter.emitMessageWithPathParam(Message.of(new Dto("foo")).addMetadata(metadata).addMetadata(cloudEventMetadata));
+
+        await().atMost(10, TimeUnit.SECONDS)
+                .until(() -> httpEndpoint.getIdentifiableRequests(), aMapWithSize(1));
+
+        HttpEndpoint.Request request = httpEndpoint.getIdentifiableRequests().get(id);
+        assertThat(new JsonObject(request.getBody())).isEqualTo(new JsonObject().put("field", "foo"));
+        assertThat(request.getHeaders()).contains(immutableEntry("myHeader", singletonList("myValue")));
+        assertThat(request.getQueryParameters()).contains(immutableEntry("sort", singletonList("ASC")));
+        assertThat(request.getHeaders()).contains(immutableEntry("ce-subject", singletonList("testSubject")));
     }
 
     @Test

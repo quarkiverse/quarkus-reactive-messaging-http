@@ -151,7 +151,7 @@ class HttpSink {
             // httpHeaders might be inmutable
             Map<String, List<String>> mergedMap = new HashMap<>(httpHeaders);
             for (Entry<String, String> entry : cloudEventHeaders.entrySet()) {
-                httpHeaders.put(entry.getKey(), List.of(entry.getValue()));
+                mergedMap.put(entry.getKey(), List.of(entry.getValue()));
             }
             return mergedMap;
         }

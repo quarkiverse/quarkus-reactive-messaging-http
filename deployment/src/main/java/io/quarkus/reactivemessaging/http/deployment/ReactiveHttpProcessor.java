@@ -5,7 +5,6 @@ import static io.quarkus.arc.processor.DotNames.STRING;
 import static java.util.Arrays.asList;
 
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -138,7 +137,7 @@ public class ReactiveHttpProcessor {
         Set<String> payloadClasses = new HashSet<>();
         for (AnnotationInstance incoming : index.getIndex().getAnnotations(DotName.createSimple(Incoming.class.getName()))) {
             MethodInfo methodInfo = incoming.target().asMethod();
-            List<Type> parameters = Arrays.asList(methodInfo.args());
+            List<Type> parameters = methodInfo.parameterTypes();
 
             if (parameters.size() == 1) {
                 Type type = parameters.get(0);

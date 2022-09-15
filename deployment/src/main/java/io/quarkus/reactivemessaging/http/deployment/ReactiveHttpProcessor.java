@@ -137,7 +137,7 @@ public class ReactiveHttpProcessor {
         Set<String> payloadClasses = new HashSet<>();
         for (AnnotationInstance incoming : index.getIndex().getAnnotations(DotName.createSimple(Incoming.class.getName()))) {
             MethodInfo methodInfo = incoming.target().asMethod();
-            List<Type> parameters = methodInfo.parameters();
+            List<Type> parameters = methodInfo.parameterTypes();
 
             if (parameters.size() == 1) {
                 Type type = parameters.get(0);

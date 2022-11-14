@@ -11,7 +11,7 @@
     <description>Integration tests for the Reactive Messaging HTTP and WebSockets extension</description>
 
     <properties>
-      <version.com.github.tomakehurst.wiremock>2.34.0</version.com.github.tomakehurst.wiremock>
+      <version.com.github.tomakehurst.wiremock>2.35.0</version.com.github.tomakehurst.wiremock>
     </properties>
     <dependencies>
         <dependency>

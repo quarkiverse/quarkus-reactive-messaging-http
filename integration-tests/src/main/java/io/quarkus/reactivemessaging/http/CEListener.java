@@ -11,6 +11,7 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Metadata;
 
+import io.smallrye.common.vertx.VertxContext;
 import io.smallrye.reactive.messaging.ce.CloudEventMetadata;
 import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadata;
 import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadataBuilder;
@@ -24,6 +25,9 @@ public class CEListener {
 
     @Incoming("celistener")
     CompletionStage<Void> listener(Message<?> message) {
+        if (!VertxContext.isOnDuplicatedContext()) {
+            throw new IllegalStateException("Expected to be on a duplicated context");
+        }
         message.getMetadata(CloudEventMetadata.class).map(m -> Message.of("aBody", Metadata.of(convert(m))))
                 .ifPresent(this::send);
         return message.ack();

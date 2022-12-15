@@ -13,6 +13,8 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
+import io.smallrye.common.vertx.VertxContext;
+
 @ApplicationScoped
 @Path("http-helper")
 public class HttpTestHelper {
@@ -23,6 +25,9 @@ public class HttpTestHelper {
 
     @Incoming("http-source")
     void consume(String message) {
+        if (!VertxContext.isOnDuplicatedContext()) {
+            throw new IllegalStateException("Expected to be on a duplicated context");
+        }
         messages.add(message);
     }
 

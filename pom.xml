@@ -25,7 +25,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jandex-plugin.version>1.2.3</jandex-plugin.version>
         <quarkus.version>2.15.3.Final</quarkus.version>
-        <assertj.version>3.24.1</assertj.version>
+        <assertj.version>3.24.2</assertj.version>
     </properties>
 
     <dependencyManagement>

@@ -1,10 +1,22 @@
 package io.quarkus.reactivemessaging.http.source;
 
-import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.util.Arrays.asList;
-import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.fail;
+import io.quarkus.reactivemessaging.http.runtime.IncomingHttpMetadata;
+import io.quarkus.reactivemessaging.http.runtime.RequestMetadata;
+import io.quarkus.reactivemessaging.http.source.app.Consumer;
+import io.quarkus.reactivemessaging.utils.VertxFriendlyLock;
+import io.quarkus.test.QuarkusUnitTest;
+import io.restassured.response.ValidatableResponse;
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
+import org.eclipse.microprofile.reactive.messaging.Message;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,25 +29,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-import javax.inject.Inject;
-
-import org.eclipse.microprofile.reactive.messaging.Message;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-
-import io.quarkus.reactivemessaging.http.runtime.IncomingHttpMetadata;
-import io.quarkus.reactivemessaging.http.runtime.RequestMetadata;
-import io.quarkus.reactivemessaging.http.source.app.Consumer;
-import io.quarkus.reactivemessaging.utils.VertxFriendlyLock;
-import io.quarkus.test.QuarkusUnitTest;
-import io.restassured.response.ValidatableResponse;
-import io.vertx.core.MultiMap;
-import io.vertx.core.http.HttpMethod;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Arrays.asList;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class HttpSourceTest {
 

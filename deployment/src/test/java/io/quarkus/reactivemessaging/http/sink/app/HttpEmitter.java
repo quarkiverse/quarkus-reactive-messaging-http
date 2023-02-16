@@ -1,16 +1,14 @@
 package io.quarkus.reactivemessaging.http.sink.app;
 
-import java.util.concurrent.CompletionStage;
-
-import javax.enterprise.context.ApplicationScoped;
-
+import io.vertx.core.buffer.Buffer;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 
-import io.vertx.core.buffer.Buffer;
+import java.util.concurrent.CompletionStage;
 
 @ApplicationScoped
 public class HttpEmitter {

@@ -1,12 +1,10 @@
 package io.quarkus.reactivemessaging.http.runtime.converters;
 
-import java.lang.reflect.Type;
-
-import javax.enterprise.context.ApplicationScoped;
-
+import io.vertx.core.buffer.Buffer;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Message;
 
-import io.vertx.core.buffer.Buffer;
+import java.lang.reflect.Type;
 
 /**
  * Converts message payload to objects of specified class.

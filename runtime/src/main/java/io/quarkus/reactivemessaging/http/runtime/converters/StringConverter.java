@@ -1,13 +1,11 @@
 package io.quarkus.reactivemessaging.http.runtime.converters;
 
-import java.lang.reflect.Type;
-
-import javax.enterprise.context.ApplicationScoped;
-
-import org.eclipse.microprofile.reactive.messaging.Message;
-
 import io.smallrye.reactive.messaging.MessageConverter;
 import io.vertx.core.buffer.Buffer;
+import jakarta.enterprise.context.ApplicationScoped;
+import org.eclipse.microprofile.reactive.messaging.Message;
+
+import java.lang.reflect.Type;
 
 /**
  * Converts message payload to String

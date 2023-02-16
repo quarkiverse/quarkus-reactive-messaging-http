@@ -1,12 +1,11 @@
 package io.quarkus.reactivemessaging.http.sink.app;
 
-import java.util.concurrent.CompletionStage;
-
-import javax.enterprise.context.ApplicationScoped;
-
+import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.OnOverflow;
+
+import java.util.concurrent.CompletionStage;
 
 @ApplicationScoped
 public class HttpEmitterWithOverflow {

@@ -1,16 +1,13 @@
 package io.quarkus.reactivemessaging.http.runtime;
 
-import static io.quarkus.reactivemessaging.http.runtime.QuarkusWebSocketConnector.DEFAULT_JITTER;
-import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.INCOMING;
-import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.OUTGOING;
-
-import java.net.URI;
-import java.time.Duration;
-import java.util.Optional;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
+import io.quarkus.runtime.configuration.DurationConverter;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.reactive.messaging.annotations.ConnectorAttribute;
+import io.vertx.core.Vertx;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import mutiny.zero.flow.adapters.AdaptersToReactiveStreams;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
@@ -20,11 +17,13 @@ import org.eclipse.microprofile.reactive.streams.operators.PublisherBuilder;
 import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 import org.eclipse.microprofile.reactive.streams.operators.SubscriberBuilder;
 
-import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
-import io.quarkus.runtime.configuration.DurationConverter;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.reactive.messaging.annotations.ConnectorAttribute;
-import io.vertx.core.Vertx;
+import java.net.URI;
+import java.time.Duration;
+import java.util.Optional;
+
+import static io.quarkus.reactivemessaging.http.runtime.QuarkusWebSocketConnector.DEFAULT_JITTER;
+import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.INCOMING;
+import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.OUTGOING;
 
 /**
  * Quarkus-specific reactive messaging connector for web sockets
@@ -66,7 +65,7 @@ public class QuarkusWebSocketConnector implements IncomingConnectorFactory, Outg
         String path = config.getPath();
 
         Multi<WebSocketMessage<?>> processor = handlerBean.getProcessor(path);
-        return ReactiveStreams.fromPublisher(processor);
+        return ReactiveStreams.fromPublisher(AdaptersToReactiveStreams.publisher(processor));
     }
 
     @Override

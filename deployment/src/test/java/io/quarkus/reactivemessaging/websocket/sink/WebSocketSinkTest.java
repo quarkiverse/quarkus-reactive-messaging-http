@@ -1,13 +1,13 @@
 package io.quarkus.reactivemessaging.websocket.sink;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.Matchers.hasSize;
-
-import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
-
+import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
+import io.quarkus.reactivemessaging.websocket.sink.app.WebSocketEmitter;
+import io.quarkus.reactivemessaging.websocket.sink.app.WebSocketEndpoint;
+import io.quarkus.test.QuarkusUnitTest;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -16,13 +16,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
-import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
-import io.quarkus.reactivemessaging.websocket.sink.app.WebSocketEmitter;
-import io.quarkus.reactivemessaging.websocket.sink.app.WebSocketEndpoint;
-import io.quarkus.test.QuarkusUnitTest;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.hasSize;
 
 class WebSocketSinkTest {
     private static final Logger log = Logger.getLogger(WebSocketSinkTest.class);

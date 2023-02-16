@@ -1,15 +1,14 @@
 package io.quarkus.reactivemessaging.http.runtime;
 
-import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.INCOMING;
-import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.INCOMING_AND_OUTGOING;
-import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.OUTGOING;
-
-import java.time.Duration;
-import java.util.Optional;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
+import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
+import io.quarkus.runtime.configuration.DurationConverter;
+import io.smallrye.mutiny.Multi;
+import io.smallrye.reactive.messaging.annotations.ConnectorAttribute;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpMethod;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import mutiny.zero.flow.adapters.AdaptersToReactiveStreams;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
@@ -20,12 +19,12 @@ import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 import org.eclipse.microprofile.reactive.streams.operators.SubscriberBuilder;
 import org.jboss.logging.Logger;
 
-import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
-import io.quarkus.runtime.configuration.DurationConverter;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.reactive.messaging.annotations.ConnectorAttribute;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpMethod;
+import java.time.Duration;
+import java.util.Optional;
+
+import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.INCOMING;
+import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.INCOMING_AND_OUTGOING;
+import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.OUTGOING;
 
 /**
  * Quarkus-specific reactive messaging connector for HTTP
@@ -75,10 +74,9 @@ public class QuarkusHttpConnector implements IncomingConnectorFactory, OutgoingC
         Multi<HttpMessage<?>> processor = handlerBean.getProcessor(config.getPath(), method);
         boolean broadcast = config.getBroadcast();
         if (broadcast) {
-            return ReactiveStreams.fromPublisher(processor.broadcast().toAllSubscribers());
+            return ReactiveStreams.fromPublisher(AdaptersToReactiveStreams.publisher(processor.broadcast().toAllSubscribers()));
         } else {
-
-            return ReactiveStreams.fromPublisher(processor);
+            return ReactiveStreams.fromPublisher(AdaptersToReactiveStreams.publisher(processor));
         }
     }
 

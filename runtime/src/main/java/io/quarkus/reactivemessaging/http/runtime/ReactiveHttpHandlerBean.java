@@ -1,5 +1,12 @@
 package io.quarkus.reactivemessaging.http.runtime;
 
+import java.util.Collection;
+
+import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
+
+import org.jboss.logging.Logger;
+
 import io.quarkus.reactivemessaging.http.runtime.config.HttpStreamConfig;
 import io.quarkus.reactivemessaging.http.runtime.config.ReactiveHttpConfig;
 import io.smallrye.mutiny.Multi;
@@ -7,11 +14,6 @@ import io.smallrye.mutiny.subscription.MultiEmitter;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
-import jakarta.inject.Inject;
-import jakarta.inject.Singleton;
-import org.jboss.logging.Logger;
-
-import java.util.Collection;
 
 /**
  * a bean that handles incoming http requests

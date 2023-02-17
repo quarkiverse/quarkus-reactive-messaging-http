@@ -1,17 +1,8 @@
 package io.quarkus.reactivemessaging.http.sink;
 
-import io.quarkus.reactivemessaging.http.sink.app.Dto;
-import io.quarkus.reactivemessaging.http.sink.app.HttpEmitterWithOverflow;
-import io.quarkus.reactivemessaging.http.sink.app.HttpEndpoint;
-import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
-import io.quarkus.test.QuarkusUnitTest;
-import jakarta.inject.Inject;
-import org.hamcrest.Matchers;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,9 +11,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
+import jakarta.inject.Inject;
+
+import org.hamcrest.Matchers;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
+import io.quarkus.reactivemessaging.http.sink.app.Dto;
+import io.quarkus.reactivemessaging.http.sink.app.HttpEmitterWithOverflow;
+import io.quarkus.reactivemessaging.http.sink.app.HttpEndpoint;
+import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
+import io.quarkus.test.QuarkusUnitTest;
 
 class HttpSinkBackpressureTest {
 

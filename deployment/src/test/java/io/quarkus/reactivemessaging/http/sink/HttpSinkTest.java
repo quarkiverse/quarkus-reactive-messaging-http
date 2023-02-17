@@ -1,5 +1,29 @@
 package io.quarkus.reactivemessaging.http.sink;
 
+import static com.google.common.collect.Maps.immutableEntry;
+import static io.restassured.RestAssured.given;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.hasSize;
+
+import java.util.List;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+import jakarta.inject.Inject;
+
+import org.eclipse.microprofile.reactive.messaging.Message;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+
 import io.quarkus.reactivemessaging.http.runtime.OutgoingHttpMetadata;
 import io.quarkus.reactivemessaging.http.sink.app.Dto;
 import io.quarkus.reactivemessaging.http.sink.app.HttpEmitter;
@@ -11,28 +35,6 @@ import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadataBuilder;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import jakarta.inject.Inject;
-import org.eclipse.microprofile.reactive.messaging.Message;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-
-import java.util.List;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
-import static com.google.common.collect.Maps.immutableEntry;
-import static io.restassured.RestAssured.given;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.Matchers.aMapWithSize;
-import static org.hamcrest.Matchers.hasSize;
 
 class HttpSinkTest {
 

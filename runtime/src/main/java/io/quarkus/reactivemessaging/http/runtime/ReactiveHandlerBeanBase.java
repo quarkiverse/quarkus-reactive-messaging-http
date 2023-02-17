@@ -1,15 +1,16 @@
 package io.quarkus.reactivemessaging.http.runtime;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import jakarta.annotation.PostConstruct;
+
 import io.quarkus.reactivemessaging.http.runtime.config.StreamConfigBase;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.subscription.BackPressureStrategy;
 import io.smallrye.mutiny.subscription.MultiEmitter;
 import io.vertx.ext.web.RoutingContext;
-import jakarta.annotation.PostConstruct;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 abstract class ReactiveHandlerBeanBase<ConfigType extends StreamConfigBase, MessageType> {
 

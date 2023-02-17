@@ -1,11 +1,13 @@
 package io.quarkus.reactivemessaging.http.runtime.converters;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
+import java.lang.reflect.Type;
+
 import jakarta.enterprise.context.ApplicationScoped;
+
 import org.eclipse.microprofile.reactive.messaging.Message;
 
-import java.lang.reflect.Type;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Converts message payload to {@link JsonObject}

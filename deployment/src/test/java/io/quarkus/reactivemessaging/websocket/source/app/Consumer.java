@@ -1,17 +1,19 @@
 package io.quarkus.reactivemessaging.websocket.source.app;
 
-import io.quarkus.reactivemessaging.http.runtime.RequestMetadata;
-import io.quarkus.reactivemessaging.utils.VertxFriendlyLock;
-import io.vertx.core.Vertx;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.eclipse.microprofile.reactive.messaging.Message;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+
+import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.eclipse.microprofile.reactive.messaging.Message;
+
+import io.quarkus.reactivemessaging.http.runtime.RequestMetadata;
+import io.quarkus.reactivemessaging.utils.VertxFriendlyLock;
+import io.vertx.core.Vertx;
 
 @ApplicationScoped
 public class Consumer {

@@ -1,18 +1,20 @@
 package io.quarkus.reactivemessaging.http;
 
-import io.smallrye.common.vertx.VertxContext;
-import io.smallrye.reactive.messaging.ce.CloudEventMetadata;
-import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadata;
-import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadataBuilder;
+import java.util.concurrent.CompletionStage;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Metadata;
 
-import java.util.concurrent.CompletionStage;
+import io.smallrye.common.vertx.VertxContext;
+import io.smallrye.reactive.messaging.ce.CloudEventMetadata;
+import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadata;
+import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadataBuilder;
 
 @ApplicationScoped
 public class CEListener {

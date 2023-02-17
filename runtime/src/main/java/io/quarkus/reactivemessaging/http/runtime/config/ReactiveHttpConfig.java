@@ -1,19 +1,21 @@
 package io.quarkus.reactivemessaging.http.runtime.config;
 
-import io.quarkus.reactivemessaging.http.runtime.QuarkusHttpConnector;
-import io.quarkus.reactivemessaging.http.runtime.QuarkusWebSocketConnector;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Singleton;
-import org.eclipse.microprofile.config.Config;
-import org.eclipse.microprofile.config.ConfigProvider;
-import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+import static java.util.regex.Pattern.quote;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.regex.Pattern.quote;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Singleton;
+
+import org.eclipse.microprofile.config.Config;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
+
+import io.quarkus.reactivemessaging.http.runtime.QuarkusHttpConnector;
+import io.quarkus.reactivemessaging.http.runtime.QuarkusWebSocketConnector;
 
 /**
  * Utility class for reading http and web socket connector configuration

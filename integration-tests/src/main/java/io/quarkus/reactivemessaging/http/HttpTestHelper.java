@@ -1,17 +1,19 @@
 package io.quarkus.reactivemessaging.http;
 
-import io.smallrye.common.vertx.VertxContext;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.smallrye.common.vertx.VertxContext;
 
 @ApplicationScoped
 @Path("http-helper")

@@ -1,15 +1,16 @@
 package io.quarkus.reactivemessaging.websocket.sink.app;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
 import jakarta.websocket.Session;
 import jakarta.websocket.server.ServerEndpoint;
-import org.jboss.logging.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 @ServerEndpoint("/ws-target-url")

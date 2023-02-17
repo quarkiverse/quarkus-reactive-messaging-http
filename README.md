@@ -9,6 +9,8 @@ This project is a Quarkus extension that lets you utilize SmallRye Reactive Mess
 
 This extension was previously a part of the [core Quarkus repository](https://github.com/quarkusio/quarkus).
 
+> **⚠️** Version 2.x.x of this extension (`main` branch) supports Quarkus 3, and version 1.x.x (`quarkus2` branch) supports Quarkus 2.
+
 ## Documentation
 
 Documentation for the project can be found on the [Quarkiverse Documentation website](https://quarkiverse.github.io/quarkiverse-docs/quarkus-reactive-messaging-http/dev/index.html).

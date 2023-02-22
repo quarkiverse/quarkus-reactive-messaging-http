@@ -38,6 +38,11 @@
 
         <dependency>
             <groupId>io.smallrye.reactive</groupId>
+            <artifactId>mutiny-zero</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.smallrye.reactive</groupId>
             <artifactId>smallrye-connector-attribute-processor</artifactId>
             <scope>provided</scope>
         </dependency>

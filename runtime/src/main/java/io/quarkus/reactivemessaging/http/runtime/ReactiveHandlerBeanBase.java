@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import io.quarkus.reactivemessaging.http.runtime.config.StreamConfigBase;
 import io.smallrye.mutiny.Multi;

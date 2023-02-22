@@ -24,8 +24,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jandex-plugin.version>1.2.3</jandex-plugin.version>
-        <quarkus.version>2.16.3.Final</quarkus.version>
+        <quarkus.version>3.0.0.Alpha4</quarkus.version>
         <assertj.version>3.24.2</assertj.version>
+        <mutiny-zero.version>1.0.0</mutiny-zero.version>
     </properties>
 
     <dependencyManagement>
@@ -41,6 +42,11 @@
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.smallrye.reactive</groupId>
+                <artifactId>mutiny-zero</artifactId>
+                <version>${mutiny-zero.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

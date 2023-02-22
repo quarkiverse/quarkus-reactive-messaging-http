@@ -8,8 +8,8 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Optional;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -25,6 +25,7 @@ import io.quarkus.runtime.configuration.DurationConverter;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.reactive.messaging.annotations.ConnectorAttribute;
 import io.vertx.core.Vertx;
+import mutiny.zero.flow.adapters.AdaptersToReactiveStreams;
 
 /**
  * Quarkus-specific reactive messaging connector for web sockets
@@ -66,7 +67,7 @@ public class QuarkusWebSocketConnector implements IncomingConnectorFactory, Outg
         String path = config.getPath();
 
         Multi<WebSocketMessage<?>> processor = handlerBean.getProcessor(path);
-        return ReactiveStreams.fromPublisher(processor);
+        return ReactiveStreams.fromPublisher(AdaptersToReactiveStreams.publisher(processor));
     }
 
     @Override

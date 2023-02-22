@@ -7,8 +7,8 @@ import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Dire
 import java.time.Duration;
 import java.util.Optional;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -26,6 +26,7 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.reactive.messaging.annotations.ConnectorAttribute;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
+import mutiny.zero.flow.adapters.AdaptersToReactiveStreams;
 
 /**
  * Quarkus-specific reactive messaging connector for HTTP
@@ -75,10 +76,9 @@ public class QuarkusHttpConnector implements IncomingConnectorFactory, OutgoingC
         Multi<HttpMessage<?>> processor = handlerBean.getProcessor(config.getPath(), method);
         boolean broadcast = config.getBroadcast();
         if (broadcast) {
-            return ReactiveStreams.fromPublisher(processor.broadcast().toAllSubscribers());
+            return ReactiveStreams.fromPublisher(AdaptersToReactiveStreams.publisher(processor.broadcast().toAllSubscribers()));
         } else {
-
-            return ReactiveStreams.fromPublisher(processor);
+            return ReactiveStreams.fromPublisher(AdaptersToReactiveStreams.publisher(processor));
         }
     }
 

@@ -152,7 +152,7 @@ In the next step, we will create configurations for both streams in the `applica
 We need to configure the Web Socket connector. This is done in the `application.properties` file.
 The keys are structured as follows:
 
-`mp.messaging.[outgoing|incoming].{channel-name}.{property}=value`
+`mp.messaging.[outgoing|incoming].pass:[{channel-name}].pass:[{property}]=value`
 
 The `channel-name` segment must match the value set in the `@Incoming` and `@Outgoing` annotation:
 

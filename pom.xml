@@ -4,11 +4,11 @@
   <parent>
     <groupId>io.quarkiverse</groupId>
     <artifactId>quarkiverse-parent</artifactId>
-    <version>13</version>
+    <version>15</version>
   </parent>
   <groupId>io.quarkiverse.reactivemessaging.http</groupId>
   <artifactId>quarkus-reactive-messaging-http-parent</artifactId>
-  <version>999-SNAPSHOT</version>
+  <version>1.1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Quarkus - SmallRye Reactive Messaging - HTTP and WebSockets - Parent</name>
   <modules>
@@ -29,9 +29,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jandex-plugin.version>1.2.3</jandex-plugin.version>
-    <quarkus.version>3.1.0.Final</quarkus.version>
+    <quarkus.version>2.16.8.Final</quarkus.version>
     <assertj.version>3.24.2</assertj.version>
-    <mutiny-zero.version>1.0.0</mutiny-zero.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -46,11 +45,6 @@
         <groupId>org.assertj</groupId>
         <artifactId>assertj-core</artifactId>
         <version>${assertj.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.smallrye.reactive</groupId>
-        <artifactId>mutiny-zero</artifactId>
-        <version>${mutiny-zero.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

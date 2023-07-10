@@ -46,6 +46,7 @@ import io.quarkus.reactivemessaging.http.runtime.QuarkusWebSocketConnector;
 import io.quarkus.reactivemessaging.http.runtime.ReactiveHttpHandlerBean;
 import io.quarkus.reactivemessaging.http.runtime.ReactiveHttpRecorder;
 import io.quarkus.reactivemessaging.http.runtime.ReactiveWebSocketHandlerBean;
+import io.quarkus.reactivemessaging.http.runtime.RouteFunction;
 import io.quarkus.reactivemessaging.http.runtime.config.HttpStreamConfig;
 import io.quarkus.reactivemessaging.http.runtime.config.ReactiveHttpConfig;
 import io.quarkus.reactivemessaging.http.runtime.config.WebSocketStreamConfig;
@@ -114,8 +115,15 @@ public class ReactiveHttpProcessor {
                     .map(HttpStreamConfig::path)
                     .distinct()
                     .forEach(path -> {
-                        routeProducer.produce(RouteBuildItem.builder().route(path).handler(bodyHandler.getHandler()).build());
-                        routeProducer.produce(RouteBuildItem.builder().route(path).handler(handler).build());
+                        routeProducer.produce(RouteBuildItem.builder()
+                                .routeFunction(path, new RouteFunction(path, bodyHandler.getHandler()))
+                                .handler(bodyHandler.getHandler())
+                                .build());
+
+                        routeProducer.produce(RouteBuildItem.builder()
+                                .routeFunction(path, new RouteFunction(path, handler))
+                                .handler(handler)
+                                .build());
                     });
         }
         if (!wsConfigs.isEmpty()) {

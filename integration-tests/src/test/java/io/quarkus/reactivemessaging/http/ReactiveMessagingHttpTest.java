@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -65,6 +66,16 @@ public class ReactiveMessagingHttpTest {
         await()
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> get("/http-helper").getBody().asString(), Predicate.isEqual("TEST-MESSAGE"));
+    }
+
+    @Test
+    void testGetRootShouldReturnIndexHtml() {
+        given()
+                .when()
+                .get("/")
+                .then()
+                .statusCode(200)
+                .body("html.body", Matchers.equalTo("Hello"));
     }
 
     @AfterEach

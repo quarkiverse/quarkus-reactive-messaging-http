@@ -30,7 +30,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jandex-plugin.version>1.2.3</jandex-plugin.version>
-    <quarkus.version>3.6.6</quarkus.version>
+    <quarkus.version>3.6.7</quarkus.version>
     <assertj.version>3.25.1</assertj.version>
     <mutiny-zero.version>1.0.0</mutiny-zero.version>
   </properties>

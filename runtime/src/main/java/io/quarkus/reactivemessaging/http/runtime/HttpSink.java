@@ -20,9 +20,11 @@ import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBa
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.groups.UniRetry;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxException;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpRequest;
+import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
 class HttpSink {
@@ -103,15 +105,25 @@ class HttpSink {
     }
 
     private Uni<Void> invoke(HttpRequest<?> request, Buffer buffer) {
+        log.debugf("Invoking request: ", toString(request, buffer));
         return request
                 .sendBuffer(buffer)
                 .onItem().transform(resp -> {
                     if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                         return null;
                     } else {
-                        throw new RuntimeException("HTTP request returned an invalid status: " + resp.statusCode());
+                        throw new VertxException(
+                                "Http request: " + toString(request, buffer) + " failed with response: " + toString(resp));
                     }
                 });
+    }
+
+    private String toString(HttpRequest<?> req, Buffer buffer) {
+        return "URI:" + req.uri() + " Method:" + req.method() + " Headers: " + req.headers() + " Body: " + buffer;
+    }
+
+    private String toString(HttpResponse<?> resp) {
+        return "Code: " + resp.statusCode() + " Message: " + resp.statusMessage();
     }
 
     private HttpRequest<?> toHttpRequest(Message<?> message) {

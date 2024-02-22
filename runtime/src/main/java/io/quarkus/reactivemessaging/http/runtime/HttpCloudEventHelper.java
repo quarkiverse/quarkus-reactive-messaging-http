@@ -1,8 +1,12 @@
 package io.quarkus.reactivemessaging.http.runtime;
 
+import static java.time.temporal.ChronoField.*;
+
 import java.net.URI;
 import java.time.DateTimeException;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +25,14 @@ public class HttpCloudEventHelper {
     private static final Logger logger = LoggerFactory.getLogger(HttpCloudEventHelper.class);
 
     private static final String[] CE_PREFIXES = { "ce-", "ce_" };
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+            .optionalStart()
+            .appendFraction(MILLI_OF_SECOND, 0, 3, true)
+            .optionalEnd()
+            .appendOffset("+HH:MM", "Z")
+            .toFormatter();
 
     public static Optional<CloudEventMetadata<?>> getBinaryCloudEvent(IncomingHttpMetadata metadata) {
         DefaultCloudEventMetadataBuilder<?> builder = new DefaultCloudEventMetadataBuilder<>();
@@ -41,7 +53,8 @@ public class HttpCloudEventHelper {
         metadata.getDataContentType().ifPresent(v -> map.put(header(CloudEventMetadata.CE_ATTRIBUTE_DATA_CONTENT_TYPE), v));
         metadata.getDataSchema().ifPresent(v -> map.put(header(CloudEventMetadata.CE_ATTRIBUTE_DATA_SCHEMA), v.toString()));
         metadata.getSubject().ifPresent(v -> map.put(header(CloudEventMetadata.CE_ATTRIBUTE_SUBJECT), v));
-        metadata.getTimeStamp().ifPresent(v -> map.put(header(CloudEventMetadata.CE_ATTRIBUTE_TIME), v.toString()));
+        metadata.getTimeStamp()
+                .ifPresent(v -> map.put(header(CloudEventMetadata.CE_ATTRIBUTE_TIME), DATE_TIME_FORMATTER.format(v)));
         map.put(header(CloudEventMetadata.CE_ATTRIBUTE_ID), metadata.getId());
         if (metadata.getSource() != null) {
             map.put(header(CloudEventMetadata.CE_ATTRIBUTE_SOURCE), metadata.getSource().toString());

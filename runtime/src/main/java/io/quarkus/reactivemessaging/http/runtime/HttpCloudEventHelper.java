@@ -1,6 +1,6 @@
 package io.quarkus.reactivemessaging.http.runtime;
 
-import static java.time.temporal.ChronoField.*;
+import static java.time.temporal.ChronoField.MILLI_OF_SECOND;
 
 import java.net.URI;
 import java.time.DateTimeException;

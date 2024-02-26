@@ -15,6 +15,8 @@ import java.util.function.Predicate;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 
@@ -34,6 +36,23 @@ public class ReactiveMessagingHttpTest {
         await().timeout(Duration.ofSeconds(2)).untilAsserted(() -> cloudEventService.verify(postRequestedFor(urlEqualTo("/"))
                 .withHeader("ce-" + CloudEventMetadata.CE_ATTRIBUTE_TYPE, equalTo("aType"))
                 .withHeader("ce-extension", equalTo("aExtension"))));
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "2024-02-22T16:48:00Z|2024-02-22T16:48:00Z",
+            "2024-02-22T16:48:12Z|2024-02-22T16:48:12Z",
+            "2024-02-22T16:48:00.000Z|2024-02-22T16:48:00Z",
+            "2024-02-22T16:48:12.000Z|2024-02-22T16:48:12Z",
+            "2024-02-22T16:48:12.653Z|2024-02-22T16:48:12.653Z",
+            "2024-02-22T16:48:12.653+08:00|2024-02-22T16:48:12.653+08:00"
+    }, delimiter = '|')
+    void testCloudEventTime(String time, String expected) {
+        given().body("aBody").header("ce-type", "aType")
+                .header("ce-time", time).post("/celistener");
+        await().timeout(Duration.ofSeconds(2)).untilAsserted(() -> cloudEventService.verify(postRequestedFor(urlEqualTo("/"))
+                .withHeader("ce-" + CloudEventMetadata.CE_ATTRIBUTE_TYPE, equalTo("aType"))
+                .withHeader("ce-" + CloudEventMetadata.CE_ATTRIBUTE_TIME, equalTo(expected))));
     }
 
     @Test

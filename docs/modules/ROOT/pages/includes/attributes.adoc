@@ -9,8 +9,7 @@
 :quarkus-tree-url: {quarkus-base-url}/tree/main
 :quarkus-issues-url: {quarkus-base-url}/issues
 :quarkus-guides-url: https://quarkus.io/guides
-:quickstarts-base-url: https://github.com/quarkusio/quarkus-quickstarts
-:quickstarts-clone-url: https://github.com/quarkusio/quarkus-quickstarts.git
-:quickstarts-archive-url: https://github.com/quarkusio/quarkus-quickstarts/archive/main.zip
-:quickstarts-blob-url: https://github.com/quarkusio/quarkus-quickstarts/blob/main
-:quickstarts-tree-url: https://github.com/quarkusio/quarkus-quickstarts/tree/main
+:extension-clone-url: https://github.com/quarkiverse/quarkus-reactive-messaging-http.git
+:extension-archive-url: https://github.com/quarkiverse/quarkus-reactive-messaging-http/archive/main.zip
+:extension-blob-url: https://github.com/quarkiverse/quarkus-reactive-messaging-http/blob/main
+:extension-tree-url: https://github.com/quarkiverse/quarkus-reactive-messaging-http/tree/main

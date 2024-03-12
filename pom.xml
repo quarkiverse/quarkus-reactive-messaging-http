@@ -15,8 +15,6 @@
     <module>deployment</module>
     <module>runtime</module>
     <module>docs</module>
-    <module>http-quickstart</module>
-    <module>websockets-quickstart</module>
   </modules>
   <scm>
     <connection>scm:git:git@github.com:quarkiverse/quarkus-reactive-messaging-http.git</connection>
@@ -25,7 +23,7 @@
     <tag>HEAD</tag>
   </scm>
   <properties>
-    <compiler-plugin.version>3.8.1</compiler-plugin.version>
+    <compiler-plugin.version>3.11.0</compiler-plugin.version>
     <maven.compiler.parameters>true</maven.compiler.parameters>
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
@@ -44,6 +42,16 @@
         <version>${quarkus.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.reactivemessaging.http</groupId>
+        <artifactId>quarkus-reactive-messaging-http</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.reactivemessaging.http</groupId>
+        <artifactId>quarkus-reactive-messaging-http-deployment</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>
@@ -96,6 +104,19 @@
       </activation>
       <modules>
         <module>integration-tests</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>quickstarts</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <modules>
+        <module>http-quickstart</module>
+        <module>websockets-quickstart</module>
       </modules>
     </profile>
   </profiles>

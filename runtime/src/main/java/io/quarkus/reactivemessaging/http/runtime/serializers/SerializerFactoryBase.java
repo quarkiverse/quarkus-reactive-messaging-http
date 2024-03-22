@@ -19,13 +19,16 @@ public abstract class SerializerFactoryBase {
     private final List<Serializer<?>> predefinedSerializers = new ArrayList<>();
 
     protected SerializerFactoryBase() {
+
         predefinedSerializers.add(new JsonObjectSerializer());
         predefinedSerializers.add(new JsonArraySerializer());
         predefinedSerializers.add(new StringSerializer());
         predefinedSerializers.add(new BufferSerializer());
-        predefinedSerializers.add(new ObjectSerializer());
         predefinedSerializers.add(new CollectionSerializer());
         predefinedSerializers.add(new NumberSerializer());
+        predefinedSerializers.add(new JakartaJsonObjectSerializer());
+        predefinedSerializers.add(new JakartaJsonArraySerializer());
+        predefinedSerializers.add(new ObjectSerializer());
 
         predefinedSerializers.sort(Comparator.comparingInt(Serializer::getPriority));
         Collections.reverse(predefinedSerializers);

@@ -29,9 +29,9 @@ To let a user easily try out the service, we will implement an HTTP resource sum
 We recommend that you follow the instructions in the next sections and create the application step by step.
 However, you can go right to the completed example.
 
-Clone the Git repository: `git clone {quickstarts-clone-url}`, or download an {quickstarts-archive-url}[archive].
+Clone the Git repository: `git clone {extension-clone-url}`, or download an {extension-archive-url}[archive].
 
-The solution is located in the `reactive-messaging-http-quickstart` {quickstarts-tree-url}/reactive-messaging-http-quickstart[directory].
+The solution is located in the `http-quickstart` {extension-tree-url}/http-quickstart[directory].
 
 == Creating the Maven Project
 

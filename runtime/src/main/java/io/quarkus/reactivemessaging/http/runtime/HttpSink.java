@@ -15,8 +15,10 @@ import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 import org.eclipse.microprofile.reactive.streams.operators.SubscriberBuilder;
 import org.jboss.logging.Logger;
 
+import io.quarkus.reactivemessaging.http.runtime.config.TlsConfig;
 import io.quarkus.reactivemessaging.http.runtime.serializers.Serializer;
 import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
+import io.quarkus.tls.TlsConfiguration;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.groups.UniRetry;
 import io.vertx.core.Vertx;
@@ -47,7 +49,8 @@ class HttpSink {
             Optional<Duration> delay,
             Optional<Integer> maxPoolSize,
             Optional<Integer> maxWaitQueueSize,
-            SerializerFactoryBase serializerFactory) {
+            SerializerFactoryBase serializerFactory,
+            TlsConfiguration tlsConfiguration) {
         this.method = method;
         this.url = url;
         this.serializerFactory = serializerFactory;
@@ -60,6 +63,9 @@ class HttpSink {
         if (maxWaitQueueSize.isPresent()) {
             options.setMaxWaitQueueSize(maxWaitQueueSize.get());
         }
+
+        TlsConfig.configure(options, tlsConfiguration);
+
         client = WebClient.create(io.vertx.mutiny.core.Vertx.newInstance(vertx), options);
 
         if (Arrays.stream(SUPPORTED_SCHEMES).noneMatch(url.toLowerCase()::startsWith)) {

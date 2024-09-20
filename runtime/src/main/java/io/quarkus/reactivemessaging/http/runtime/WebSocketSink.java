@@ -14,8 +14,10 @@ import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 import org.eclipse.microprofile.reactive.streams.operators.SubscriberBuilder;
 import org.jboss.logging.Logger;
 
+import io.quarkus.reactivemessaging.http.runtime.config.TlsConfig;
 import io.quarkus.reactivemessaging.http.runtime.serializers.Serializer;
 import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
+import io.quarkus.tls.TlsConfiguration;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.groups.UniRetry;
 import io.smallrye.mutiny.vertx.AsyncResultUni;
@@ -25,6 +27,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.http.WebSocketConnectOptions;
 
@@ -43,7 +46,8 @@ class WebSocketSink {
     private final SerializerFactoryBase serializerFactory;
 
     WebSocketSink(Vertx vertx, URI uri, String serializer, SerializerFactoryBase serializerFactory,
-            int maxRetries, Optional<Duration> delay, double jitter) {
+            int maxRetries, Optional<Duration> delay, double jitter,
+            TlsConfiguration tlsConfiguration) {
         this.uri = uri;
         this.serializerFactory = serializerFactory;
         this.serializer = serializer;
@@ -54,7 +58,11 @@ class WebSocketSink {
         }
         ssl = WSS.equals(scheme);
 
-        httpClient = vertx.createHttpClient();
+        HttpClientOptions options = new HttpClientOptions();
+
+        TlsConfig.configure(options, tlsConfiguration);
+
+        httpClient = vertx.createHttpClient(options);
         subscriber = ReactiveStreams.<Message<?>> builder()
                 .flatMapCompletionStage(m -> {
                     Uni<Void> send = send(m);

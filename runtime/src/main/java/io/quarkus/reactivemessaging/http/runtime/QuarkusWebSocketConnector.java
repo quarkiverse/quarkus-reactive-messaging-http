@@ -20,8 +20,11 @@ import org.eclipse.microprofile.reactive.streams.operators.PublisherBuilder;
 import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 import org.eclipse.microprofile.reactive.streams.operators.SubscriberBuilder;
 
+import io.quarkus.reactivemessaging.http.runtime.config.TlsConfig;
 import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
 import io.quarkus.runtime.configuration.DurationConverter;
+import io.quarkus.tls.TlsConfiguration;
+import io.quarkus.tls.TlsConfigurationRegistry;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.reactive.messaging.annotations.ConnectorAttribute;
 import io.vertx.core.Vertx;
@@ -37,6 +40,7 @@ import mutiny.zero.flow.adapters.AdaptersToReactiveStreams;
 @ConnectorAttribute(name = "maxRetries", type = "int", direction = OUTGOING, description = "The number of retries to make for sending a message to a remote websocket endpoint. A value greater than 0 is advised. Otherwise, a web socket timeout can result in a dropped message", defaultValue = QuarkusWebSocketConnector.DEFAULT_MAX_ATTEMPTS_STR)
 @ConnectorAttribute(name = "jitter", type = "double", direction = OUTGOING, description = "Configures the random factor when using back-off with maxAttempts > 1", defaultValue = DEFAULT_JITTER)
 @ConnectorAttribute(name = "delay", type = "string", direction = OUTGOING, description = "Configures a back-off delay between attempts to send a request. A random factor (jitter) is applied to increase the delay when several failures happen.")
+@ConnectorAttribute(name = "tlsConfigurationName", type = "string", direction = OUTGOING, description = "Name of the TLS configuration to be used from TLS registry.")
 
 @ConnectorAttribute(name = "path", type = "string", direction = INCOMING, description = "The path of the endpoint", mandatory = true)
 @ConnectorAttribute(name = "buffer-size", type = "string", direction = INCOMING, description = "Web socket endpoint buffers messages if a consumer is not able to keep up. This setting specifies the size of the buffer.", defaultValue = QuarkusHttpConnector.DEFAULT_SOURCE_BUFFER_STR)
@@ -60,6 +64,9 @@ public class QuarkusWebSocketConnector implements IncomingConnectorFactory, Outg
     @Inject
     Vertx vertx;
 
+    @Inject
+    TlsConfigurationRegistry tlsRegistry;
+
     @Override
     public PublisherBuilder<WebSocketMessage<?>> getPublisherBuilder(Config configuration) {
         QuarkusWebSocketConnectorIncomingConfiguration config = new QuarkusWebSocketConnectorIncomingConfiguration(
@@ -80,6 +87,9 @@ public class QuarkusWebSocketConnector implements IncomingConnectorFactory, Outg
         Integer maxRetries = config.getMaxRetries();
         URI url = URI.create(config.getUrl());
 
-        return new WebSocketSink(vertx, url, serializer, serializerFactory, maxRetries, delay, jitter).sink();
+        TlsConfiguration tlsConfiguration = TlsConfig.lookupConfig(config.getTlsConfigurationName(), tlsRegistry,
+                config.getChannel());
+
+        return new WebSocketSink(vertx, url, serializer, serializerFactory, maxRetries, delay, jitter, tlsConfiguration).sink();
     }
 }

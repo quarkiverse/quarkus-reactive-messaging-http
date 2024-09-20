@@ -20,8 +20,11 @@ import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
 import org.eclipse.microprofile.reactive.streams.operators.SubscriberBuilder;
 import org.jboss.logging.Logger;
 
+import io.quarkus.reactivemessaging.http.runtime.config.TlsConfig;
 import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
 import io.quarkus.runtime.configuration.DurationConverter;
+import io.quarkus.tls.TlsConfiguration;
+import io.quarkus.tls.TlsConfigurationRegistry;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.reactive.messaging.annotations.ConnectorAttribute;
 import io.vertx.core.Vertx;
@@ -38,6 +41,7 @@ import mutiny.zero.flow.adapters.AdaptersToReactiveStreams;
 @ConnectorAttribute(name = "maxRetries", type = "int", direction = OUTGOING, description = "The number of attempts to make for sending a request to a remote endpoint. Must not be less than zero", defaultValue = QuarkusHttpConnector.DEFAULT_MAX_ATTEMPTS_STR)
 @ConnectorAttribute(name = "jitter", type = "string", direction = OUTGOING, description = "Configures the random factor when using back-off with maxRetries > 0", defaultValue = QuarkusHttpConnector.DEFAULT_JITTER)
 @ConnectorAttribute(name = "delay", type = "string", direction = OUTGOING, description = "Configures a back-off delay between attempts to send a request. A random factor (jitter) is applied to increase the delay when several failures happen.")
+@ConnectorAttribute(name = "tlsConfigurationName", type = "string", direction = OUTGOING, description = "Name of the TLS configuration to be used from TLS registry.")
 
 @ConnectorAttribute(name = "method", type = "string", direction = INCOMING_AND_OUTGOING, description = "The HTTP method (either `POST` or `PUT`)", defaultValue = "POST")
 @ConnectorAttribute(name = "path", type = "string", direction = INCOMING, description = "The path of the endpoint", mandatory = true)
@@ -66,6 +70,9 @@ public class QuarkusHttpConnector implements IncomingConnectorFactory, OutgoingC
 
     @Inject
     SerializerFactoryBase serializerFactory;
+
+    @Inject
+    TlsConfigurationRegistry tlsRegistry;
 
     @Override
     public PublisherBuilder<HttpMessage<?>> getPublisherBuilder(Config configuration) {
@@ -116,8 +123,10 @@ public class QuarkusHttpConnector implements IncomingConnectorFactory, OutgoingC
             throw new IllegalArgumentException(String.format("Failed to parse jitter value '%s' to a double.", jitterAsString));
         }
 
+        TlsConfiguration tlsConfiguration = TlsConfig.lookupConfig(config.getTlsConfigurationName(), tlsRegistry,
+                config.getChannel());
         return new HttpSink(vertx, method, url, serializer, maxRetries, jitter, delay, maxPoolSize, maxWaitQueueSize,
-                serializerFactory).sink();
+                serializerFactory, tlsConfiguration).sink();
     }
 
 }

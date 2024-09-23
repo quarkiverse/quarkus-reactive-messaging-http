@@ -2,81 +2,25 @@ name: Quarkiverse Release
 
 on:
   pull_request:
-    types: [closed]
+    types: [ closed ]
     paths:
       - '.github/project.yml'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    name: release
-    if: ${{github.event.pull_request.merged == true}}
+  prepare-release:
+    name: Prepare Release
+    if: ${{ github.event.pull_request.merged == true}}
+    uses: quarkiverse/.github/.github/workflows/prepare-release.yml@main
+    secrets: inherit
 
-    steps:
-      - uses: radcortez/project-metadata-action@main
-        name: Retrieve project metadata
-        id: metadata
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          metadata-file-path: '.github/project.yml'
-
-      - uses: actions/checkout@v4
-
-      - name: Import GPG key
-        id: import_gpg
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-
-      - name: Cache local Maven repository
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Configure Git author
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-      - name: Maven release ${{steps.metadata.outputs.current-version}}
-        run: |
-          gpg --quiet --batch --yes --decrypt --passphrase="${{secrets.GPG_PASSPHRASE}}" --output maven-settings.xml .github/release/maven-settings.xml.gpg
-          git checkout -b release
-          mvn -B release:prepare -Prelease -DreleaseVersion=${{steps.metadata.outputs.current-version}} -DdevelopmentVersion=${{steps.metadata.outputs.next-version}} -s maven-settings.xml
-          git commit -am "Update stable version for documentation"
-          git checkout ${{github.base_ref}}
-          git rebase release
-          mvn -B release:perform -Darguments=-DperformRelease -DperformRelease -Prelease -s maven-settings.xml
-
-      - name: Adjust tag for documentation changes
-        run: |
-          git checkout ${{steps.metadata.outputs.current-version}}
-          mvn -B clean install -DskipTests -DskipITs
-          git commit -am "Update stable version for documentation"
-          # Move the tag after inclusion of documentation adjustments
-          git tag -f ${{steps.metadata.outputs.current-version}}
-          # Go back to main
-          git checkout main
-
-      - name: Push changes to ${{github.base_ref}}
-        uses: ad-m/github-push-action@v0.8.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{github.base_ref}}
-
-      - name: Push tags
-        uses: ad-m/github-push-action@v0.8.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tags: true
-          branch: ${{github.base_ref}}
+  perform-release:
+    name: Perform Release
+    needs: prepare-release
+    uses: quarkiverse/.github/.github/workflows/perform-release.yml@main
+    secrets: inherit
+    with:
+      version: ${{needs.prepare-release.outputs.release-version}}

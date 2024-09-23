@@ -1,0 +1,26 @@
+name: Retry Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: Tag version to perform release
+        required: true
+
+permissions:
+  attestations: write
+  id-token: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  perform-release:
+    name: Perform Release
+    uses: quarkiverse/.github/.github/workflows/perform-release.yml@main
+    secrets: inherit
+    with:
+      version: ${{ github.event.inputs.version }}

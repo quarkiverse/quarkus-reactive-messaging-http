@@ -219,7 +219,7 @@ public class ReactiveHttpProcessor {
 
             try (MethodCreator init = factory.getMethodCreator("initAdditionalSerializers", void.class)) {
                 init.setModifiers(Modifier.PROTECTED);
-                MethodDescriptor addSerializer = MethodDescriptor.ofMethod(SerializerFactoryBase.class, "addSerializer",
+                MethodDescriptor addSerializer = MethodDescriptor.ofMethod(baseClass, "addSerializer",
                         void.class, String.class, type);
 
                 for (String serializerName : serializers) {

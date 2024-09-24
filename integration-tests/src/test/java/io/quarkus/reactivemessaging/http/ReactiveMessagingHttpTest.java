@@ -68,7 +68,7 @@ public class ReactiveMessagingHttpTest {
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> get("/websocket-helper").getBody().asString(), Predicate.isEqual("TEST-MESSAGE"));
+                .until(() -> get("/websocket-helper").getBody().asString(), Predicate.isEqual("tEST-MESSAGE"));
     }
 
     @Test
@@ -84,7 +84,7 @@ public class ReactiveMessagingHttpTest {
 
         await()
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> get("/http-helper").getBody().asString(), Predicate.isEqual("TEST-MESSAGE"));
+                .until(() -> get("/http-helper").getBody().asString(), Predicate.isEqual("tEST-MESSAGE"));
     }
 
     @Test

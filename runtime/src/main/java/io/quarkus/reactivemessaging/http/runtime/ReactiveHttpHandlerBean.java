@@ -12,7 +12,6 @@ import io.quarkus.reactivemessaging.http.runtime.config.ReactiveHttpConfig;
 import io.quarkus.reactivemessaging.http.runtime.serializers.DeserializerFactoryBase;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.subscription.MultiEmitter;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
 
@@ -62,16 +61,16 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
                     "No consumer subscribed for messages sent to Reactive Messaging HTTP endpoint on path: " + path);
         } else if (guard.prepareToEmit()) {
             try {
-                HttpMessage<Buffer> message = new HttpMessage<>(event.getBody(), new IncomingHttpMetadata(event),
+                emitter.emit(new HttpMessage<>(
+                        deserializerFactory.getDeserializer(deserializerName).map(d -> d.deserialize(event.getBody()))
+                                .orElse(event.getBody()),
+                        new IncomingHttpMetadata(event),
                         () -> {
                             if (!event.response().ended()) {
                                 event.response().setStatusCode(202).end();
                             }
                         },
-                        error -> onUnexpectedError(event, error, "Failed to process message."));
-                deserializerFactory.getDeserializer(deserializerName)
-                        .ifPresent(d -> message.withPayload(d.deserialize(message.getPayload())));
-                emitter.emit(message);
+                        error -> onUnexpectedError(event, error, "Failed to process message.")));
             } catch (Exception any) {
                 guard.dequeue();
                 onUnexpectedError(event, any, "Emitting message failed");

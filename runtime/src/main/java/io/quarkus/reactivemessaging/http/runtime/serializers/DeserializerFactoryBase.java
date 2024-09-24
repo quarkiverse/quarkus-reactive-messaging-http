@@ -4,13 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.jboss.logging.Logger;
-
 /**
  * a base superclass for a SerializerFactory that is generated in build time
  */
 public abstract class DeserializerFactoryBase {
-    private static final Logger log = Logger.getLogger(DeserializerFactoryBase.class);
 
     private final Map<String, Deserializer<?>> deserializersByClassName = new HashMap<>();
 
@@ -35,7 +32,7 @@ public abstract class DeserializerFactoryBase {
         deserializersByClassName.put(className, serializer);
     }
 
-    /**
+    /*
      * method that initializes additional serializers (used by user's config).
      * Implemented in the generated subclass
      */

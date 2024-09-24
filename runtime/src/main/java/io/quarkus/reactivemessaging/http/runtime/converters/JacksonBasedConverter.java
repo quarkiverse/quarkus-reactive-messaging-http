@@ -26,5 +26,10 @@ public abstract class JacksonBasedConverter implements MessageConverter {
         }
     }
 
+    @Override
+    public int getPriority() {
+        return CONVERTER_DEFAULT_PRIORITY - 1;
+    }
+
     protected abstract Message<?> doConvert(Message<?> in, Type target);
 }

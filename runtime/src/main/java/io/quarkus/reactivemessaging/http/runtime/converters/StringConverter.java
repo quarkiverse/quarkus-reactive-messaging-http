@@ -14,7 +14,6 @@ import io.vertx.core.buffer.Buffer;
  */
 @ApplicationScoped
 public class StringConverter implements MessageConverter {
-
     @Override
     public boolean canConvert(Message<?> in, Type target) {
         return in.getPayload() instanceof Buffer && target == String.class;
@@ -23,5 +22,10 @@ public class StringConverter implements MessageConverter {
     @Override
     public Message<String> convert(Message<?> in, Type target) {
         return in.withPayload(((Buffer) in.getPayload()).toString());
+    }
+
+    @Override
+    public int getPriority() {
+        return CONVERTER_DEFAULT_PRIORITY - 1;
     }
 }

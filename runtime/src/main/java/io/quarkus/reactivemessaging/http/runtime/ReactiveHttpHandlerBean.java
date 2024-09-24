@@ -50,7 +50,7 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
 
     @Override
     protected String description(HttpStreamConfig streamConfig) {
-        return String.format("path: %s, method %s, deserializer %s", streamConfig.path, streamConfig.method);
+        return String.format("path: %s, method %s", streamConfig.path, streamConfig.method);
     }
 
     @Override

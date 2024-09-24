@@ -26,7 +26,7 @@ abstract class ReactiveHandlerBeanBase<ConfigType extends StreamConfigBase, Mess
         if (bundle != null) {
             MultiEmitter<? super MessageType> emitter = bundle.emitter;
             StrictQueueSizeGuard guard = bundle.guard;
-            handleRequest(event, emitter, guard, bundle.path);
+            handleRequest(event, emitter, guard, bundle.path, bundle.deserializerName);
         } else {
             event.response().setStatusCode(404).end();
         }
@@ -42,6 +42,7 @@ abstract class ReactiveHandlerBeanBase<ConfigType extends StreamConfigBase, Mess
                 .onItem().invoke(guard::dequeue);
         bundle.setProcessor(processor);
         bundle.setPath(streamConfig.path);
+        bundle.setDeserializerName(streamConfig.deserializerName);
 
         Bundle<MessageType> previousProcessor = processors.put(key(streamConfig), bundle);
         if (previousProcessor != null) {
@@ -50,7 +51,7 @@ abstract class ReactiveHandlerBeanBase<ConfigType extends StreamConfigBase, Mess
     }
 
     protected abstract void handleRequest(RoutingContext event, MultiEmitter<? super MessageType> emitter,
-            StrictQueueSizeGuard guard, String path);
+            StrictQueueSizeGuard guard, String path, String deseralizerName);
 
     protected abstract String description(ConfigType streamConfig);
 
@@ -65,6 +66,7 @@ abstract class ReactiveHandlerBeanBase<ConfigType extends StreamConfigBase, Mess
         private Multi<MessageType> processor; // effectively final
         private MultiEmitter<? super MessageType> emitter; // effectively final
         private String path;
+        private String deserializerName;
 
         private Bundle(StrictQueueSizeGuard guard) {
             this.guard = guard;
@@ -84,6 +86,14 @@ abstract class ReactiveHandlerBeanBase<ConfigType extends StreamConfigBase, Mess
 
         public void setPath(String path) {
             this.path = path;
+        }
+
+        public String getDeserializerName() {
+            return deserializerName;
+        }
+
+        public void setDeserializerName(String deserializerName) {
+            this.deserializerName = deserializerName;
         }
     }
 }

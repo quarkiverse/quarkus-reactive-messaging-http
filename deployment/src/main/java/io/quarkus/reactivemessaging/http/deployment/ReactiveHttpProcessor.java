@@ -54,6 +54,8 @@ import io.quarkus.reactivemessaging.http.runtime.converters.JsonArrayConverter;
 import io.quarkus.reactivemessaging.http.runtime.converters.JsonObjectConverter;
 import io.quarkus.reactivemessaging.http.runtime.converters.ObjectConverter;
 import io.quarkus.reactivemessaging.http.runtime.converters.StringConverter;
+import io.quarkus.reactivemessaging.http.runtime.serializers.Deserializer;
+import io.quarkus.reactivemessaging.http.runtime.serializers.DeserializerFactoryBase;
 import io.quarkus.reactivemessaging.http.runtime.serializers.Serializer;
 import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
 import io.quarkus.vertx.http.deployment.BodyHandlerBuildItem;
@@ -135,7 +137,12 @@ public class ReactiveHttpProcessor {
                     .forEach(path -> routeProducer.produce(RouteBuildItem.builder().route(path).handler(handler).build()));
         }
 
-        initSerializers(ReactiveHttpConfig.readSerializers(), generatedBeanProducer);
+        initSerializers(ReactiveHttpConfig.readSerializers(),
+                "io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactory", Serializer.class,
+                SerializerFactoryBase.class, generatedBeanProducer);
+        initSerializers(ReactiveHttpConfig.readDeserializers(),
+                "io.quarkus.reactivemessaging.http.runtime.serializers.DeserializerFactory", Deserializer.class,
+                DeserializerFactoryBase.class, generatedBeanProducer);
     }
 
     @BuildStep
@@ -201,18 +208,19 @@ public class ReactiveHttpProcessor {
         }
     }
 
-    private void initSerializers(List<String> serializers, BuildProducer<GeneratedBeanBuildItem> generatedBeans) {
+    private void initSerializers(List<String> serializers, String className, Class<?> type, Class<?> baseClass,
+            BuildProducer<GeneratedBeanBuildItem> generatedBeans) {
         ClassOutput classOutput = new GeneratedBeanGizmoAdaptor(generatedBeans);
         try (ClassCreator factory = ClassCreator.builder().classOutput(classOutput)
-                .className("io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactory")
-                .superClass(SerializerFactoryBase.class)
+                .className(className)
+                .superClass(baseClass)
                 .build()) {
             factory.addAnnotation(ApplicationScoped.class);
 
             try (MethodCreator init = factory.getMethodCreator("initAdditionalSerializers", void.class)) {
                 init.setModifiers(Modifier.PROTECTED);
-                MethodDescriptor addSerializer = MethodDescriptor.ofMethod(SerializerFactoryBase.class, "addSerializer",
-                        void.class, String.class, Serializer.class);
+                MethodDescriptor addSerializer = MethodDescriptor.ofMethod(baseClass, "addSerializer",
+                        void.class, String.class, type);
 
                 for (String serializerName : serializers) {
                     ResultHandle serializer = init.newInstance(MethodDescriptor.ofConstructor(serializerName));

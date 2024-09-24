@@ -9,6 +9,7 @@ import org.jboss.logging.Logger;
 
 import io.quarkus.reactivemessaging.http.runtime.config.ReactiveHttpConfig;
 import io.quarkus.reactivemessaging.http.runtime.config.WebSocketStreamConfig;
+import io.quarkus.reactivemessaging.http.runtime.serializers.DeserializerFactoryBase;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.subscription.MultiEmitter;
 import io.vertx.core.buffer.Buffer;
@@ -26,9 +27,12 @@ public class ReactiveWebSocketHandlerBean extends ReactiveHandlerBeanBase<WebSoc
     @Inject
     ReactiveHttpConfig config;
 
+    @Inject
+    DeserializerFactoryBase deserializerFactory;
+
     @Override
     protected void handleRequest(RoutingContext event, MultiEmitter<? super WebSocketMessage<?>> emitter,
-            StrictQueueSizeGuard guard, String path) {
+            StrictQueueSizeGuard guard, String path, String deserializerName) {
         event.request().toWebSocket(
                 webSocket -> {
                     if (webSocket.failed()) {
@@ -43,7 +47,9 @@ public class ReactiveWebSocketHandlerBean extends ReactiveHandlerBeanBase<WebSoc
                                                         "Reactive Messaging WebSocket endpoint on path: " + path);
                                     } else if (guard.prepareToEmit()) {
                                         try {
-                                            emitter.emit(new WebSocketMessage<>(b,
+                                            emitter.emit(new WebSocketMessage<>(
+                                                    deserializerFactory.getDeserializer(deserializerName)
+                                                            .map(d -> d.deserialize(b)).orElse(b),
                                                     new RequestMetadata(event),
                                                     () -> serverWebSocket.write(Buffer.buffer("ACK")),
                                                     error -> onUnexpectedError(serverWebSocket, error,

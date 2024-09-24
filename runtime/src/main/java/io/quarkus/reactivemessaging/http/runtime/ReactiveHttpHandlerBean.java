@@ -9,9 +9,9 @@ import org.jboss.logging.Logger;
 
 import io.quarkus.reactivemessaging.http.runtime.config.HttpStreamConfig;
 import io.quarkus.reactivemessaging.http.runtime.config.ReactiveHttpConfig;
+import io.quarkus.reactivemessaging.http.runtime.serializers.DeserializerFactoryBase;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.subscription.MultiEmitter;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
 
@@ -25,6 +25,9 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
 
     @Inject
     ReactiveHttpConfig config;
+
+    @Inject
+    DeserializerFactoryBase deserializerFactory;
 
     Multi<HttpMessage<?>> getProcessor(String path, HttpMethod method) {
         return processors.get(key(path, method)).getProcessor();
@@ -52,20 +55,22 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
 
     @Override
     protected void handleRequest(RoutingContext event, MultiEmitter<? super HttpMessage<?>> emitter,
-            StrictQueueSizeGuard guard, String path) {
+            StrictQueueSizeGuard guard, String path, String deserializerName) {
         if (emitter == null) {
             onUnexpectedError(event, null,
                     "No consumer subscribed for messages sent to Reactive Messaging HTTP endpoint on path: " + path);
         } else if (guard.prepareToEmit()) {
             try {
-                HttpMessage<Buffer> message = new HttpMessage<>(event.getBody(), new IncomingHttpMetadata(event),
+                emitter.emit(new HttpMessage<>(
+                        deserializerFactory.getDeserializer(deserializerName).map(d -> d.deserialize(event.getBody()))
+                                .orElse(event.getBody()),
+                        new IncomingHttpMetadata(event),
                         () -> {
                             if (!event.response().ended()) {
                                 event.response().setStatusCode(202).end();
                             }
                         },
-                        error -> onUnexpectedError(event, error, "Failed to process message."));
-                emitter.emit(message);
+                        error -> onUnexpectedError(event, error, "Failed to process message.")));
             } catch (Exception any) {
                 guard.dequeue();
                 onUnexpectedError(event, any, "Emitting message failed");

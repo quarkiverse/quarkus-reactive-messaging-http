@@ -71,7 +71,8 @@ public class ReactiveHttpConfig {
                 String path = getConfigProperty(IN_KEY, connectorName, "path", String.class);
                 int bufferSize = getConfigProperty(IN_KEY, connectorName, "buffer-size",
                         QuarkusHttpConnector.DEFAULT_SOURCE_BUFFER, Integer.class);
-                streamConfigs.add(new HttpStreamConfig(path, method, connectorName, bufferSize));
+                String deserializerName = getConfigProperty(IN_KEY, connectorName, "deserializer", null, String.class);
+                streamConfigs.add(new HttpStreamConfig(path, method, connectorName, bufferSize, deserializerName));
             }
         }
         return streamConfigs;
@@ -93,7 +94,8 @@ public class ReactiveHttpConfig {
                 String path = getConfigProperty(IN_KEY, connectorName, "path", String.class);
                 int bufferSize = getConfigProperty(IN_KEY, connectorName, "buffer-size",
                         QuarkusWebSocketConnector.DEFAULT_SOURCE_BUFFER, Integer.class);
-                streamConfigs.add(new WebSocketStreamConfig(path, bufferSize));
+                String deserializerName = getConfigProperty(IN_KEY, connectorName, "deserializer", null, String.class);
+                streamConfigs.add(new WebSocketStreamConfig(path, bufferSize, deserializerName));
             }
         }
         return streamConfigs;
@@ -105,17 +107,25 @@ public class ReactiveHttpConfig {
      * @return list of custom serializer class names
      */
     public static List<String> readSerializers() {
+        return readSerializers(OUT_PATTERN, OUT_KEY, MP_MSG_OUT, "serializer");
+    }
+
+    public static List<String> readDeserializers() {
+        return readSerializers(IN_PATTERN, IN_KEY, MP_MSG_IN, "deserializer");
+    }
+
+    private static List<String> readSerializers(Pattern pattern, String key, String message, String serializerKey) {
         List<String> result = new ArrayList<>();
         Config config = ConfigProviderResolver.instance().getConfig();
         for (String propertyName : config.getPropertyNames()) {
-            String connectorName = getConnectorNameIfMatching(OUT_PATTERN, propertyName, OUT_KEY, MP_MSG_OUT,
+            String connectorName = getConnectorNameIfMatching(pattern, propertyName, key, message,
                     QuarkusWebSocketConnector.NAME);
             if (connectorName == null) {
-                connectorName = getConnectorNameIfMatching(OUT_PATTERN, propertyName, OUT_KEY, MP_MSG_OUT,
+                connectorName = getConnectorNameIfMatching(pattern, propertyName, key, message,
                         QuarkusHttpConnector.NAME);
             }
             if (connectorName != null) {
-                String serializer = getConfigProperty(OUT_KEY, connectorName, "serializer", null, String.class);
+                String serializer = getConfigProperty(key, connectorName, serializerKey, null, String.class);
                 if (serializer != null) {
                     result.add(serializer);
                 }

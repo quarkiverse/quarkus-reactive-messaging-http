@@ -9,6 +9,7 @@ import org.jboss.logging.Logger;
 
 import io.quarkus.reactivemessaging.http.runtime.config.HttpStreamConfig;
 import io.quarkus.reactivemessaging.http.runtime.config.ReactiveHttpConfig;
+import io.quarkus.reactivemessaging.http.runtime.serializers.DeserializerFactoryBase;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.subscription.MultiEmitter;
 import io.vertx.core.buffer.Buffer;
@@ -25,6 +26,9 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
 
     @Inject
     ReactiveHttpConfig config;
+
+    @Inject
+    DeserializerFactoryBase deserializerFactory;
 
     Multi<HttpMessage<?>> getProcessor(String path, HttpMethod method) {
         return processors.get(key(path, method)).getProcessor();
@@ -47,12 +51,12 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
 
     @Override
     protected String description(HttpStreamConfig streamConfig) {
-        return String.format("path: %s, method %s", streamConfig.path, streamConfig.method);
+        return String.format("path: %s, method %s, deserializer %s", streamConfig.path, streamConfig.method);
     }
 
     @Override
     protected void handleRequest(RoutingContext event, MultiEmitter<? super HttpMessage<?>> emitter,
-            StrictQueueSizeGuard guard, String path) {
+            StrictQueueSizeGuard guard, String path, String deserializerName) {
         if (emitter == null) {
             onUnexpectedError(event, null,
                     "No consumer subscribed for messages sent to Reactive Messaging HTTP endpoint on path: " + path);
@@ -65,6 +69,8 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
                             }
                         },
                         error -> onUnexpectedError(event, error, "Failed to process message."));
+                deserializerFactory.getDeserializer(deserializerName)
+                        .ifPresent(d -> message.withPayload(d.deserialize(message.getPayload())));
                 emitter.emit(message);
             } catch (Exception any) {
                 guard.dequeue();

@@ -7,8 +7,8 @@ import io.vertx.core.http.HttpMethod;
 public class HttpStreamConfig extends StreamConfigBase {
     public final HttpMethod method;
 
-    public HttpStreamConfig(String path, String method, String name, int bufferSize) {
-        super(bufferSize, path);
+    public HttpStreamConfig(String path, String method, String name, int bufferSize, String deserializerName) {
+        super(bufferSize, path, deserializerName);
         this.method = toHttpMethod(method, name);
     }
 

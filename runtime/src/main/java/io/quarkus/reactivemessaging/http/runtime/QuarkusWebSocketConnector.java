@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.Config;
@@ -65,7 +66,7 @@ public class QuarkusWebSocketConnector implements IncomingConnectorFactory, Outg
     Vertx vertx;
 
     @Inject
-    TlsConfigurationRegistry tlsRegistry;
+    Instance<TlsConfigurationRegistry> tlsRegistry;
 
     @Override
     public PublisherBuilder<WebSocketMessage<?>> getPublisherBuilder(Config configuration) {
@@ -87,8 +88,8 @@ public class QuarkusWebSocketConnector implements IncomingConnectorFactory, Outg
         Integer maxRetries = config.getMaxRetries();
         URI url = URI.create(config.getUrl());
 
-        TlsConfiguration tlsConfiguration = TlsConfig.lookupConfig(config.getTlsConfigurationName(), tlsRegistry,
-                config.getChannel());
+        Optional<TlsConfiguration> tlsConfiguration = TlsConfig.lookupConfig(config.getTlsConfigurationName(),
+                tlsRegistry.isResolvable() ? Optional.of(tlsRegistry.get()) : Optional.empty());
 
         return new WebSocketSink(vertx, url, serializer, serializerFactory, maxRetries, delay, jitter, tlsConfiguration).sink();
     }

@@ -47,7 +47,7 @@ class WebSocketSink {
 
     WebSocketSink(Vertx vertx, URI uri, String serializer, SerializerFactoryBase serializerFactory,
             int maxRetries, Optional<Duration> delay, double jitter,
-            TlsConfiguration tlsConfiguration) {
+            Optional<TlsConfiguration> tlsConfiguration) {
         this.uri = uri;
         this.serializerFactory = serializerFactory;
         this.serializer = serializer;
@@ -60,7 +60,7 @@ class WebSocketSink {
 
         HttpClientOptions options = new HttpClientOptions();
 
-        TlsConfig.configure(options, tlsConfiguration);
+        tlsConfiguration.ifPresent(config -> TlsConfig.configure(options, config));
 
         httpClient = vertx.createHttpClient(options);
         subscriber = ReactiveStreams.<Message<?>> builder()

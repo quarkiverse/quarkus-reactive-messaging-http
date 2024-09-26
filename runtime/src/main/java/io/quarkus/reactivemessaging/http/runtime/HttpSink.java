@@ -50,7 +50,7 @@ class HttpSink {
             Optional<Integer> maxPoolSize,
             Optional<Integer> maxWaitQueueSize,
             SerializerFactoryBase serializerFactory,
-            TlsConfiguration tlsConfiguration) {
+            Optional<TlsConfiguration> tlsConfiguration) {
         this.method = method;
         this.url = url;
         this.serializerFactory = serializerFactory;
@@ -64,7 +64,7 @@ class HttpSink {
             options.setMaxWaitQueueSize(maxWaitQueueSize.get());
         }
 
-        TlsConfig.configure(options, tlsConfiguration);
+        tlsConfiguration.ifPresent(config -> TlsConfig.configure(options, config));
 
         client = WebClient.create(io.vertx.mutiny.core.Vertx.newInstance(vertx), options);
 

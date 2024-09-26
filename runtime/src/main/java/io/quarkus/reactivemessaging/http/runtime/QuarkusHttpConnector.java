@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.Config;
@@ -72,7 +73,7 @@ public class QuarkusHttpConnector implements IncomingConnectorFactory, OutgoingC
     SerializerFactoryBase serializerFactory;
 
     @Inject
-    TlsConfigurationRegistry tlsRegistry;
+    Instance<TlsConfigurationRegistry> tlsRegistry;
 
     @Override
     public PublisherBuilder<HttpMessage<?>> getPublisherBuilder(Config configuration) {
@@ -123,8 +124,8 @@ public class QuarkusHttpConnector implements IncomingConnectorFactory, OutgoingC
             throw new IllegalArgumentException(String.format("Failed to parse jitter value '%s' to a double.", jitterAsString));
         }
 
-        TlsConfiguration tlsConfiguration = TlsConfig.lookupConfig(config.getTlsConfigurationName(), tlsRegistry,
-                config.getChannel());
+        Optional<TlsConfiguration> tlsConfiguration = TlsConfig.lookupConfig(config.getTlsConfigurationName(),
+                tlsRegistry.isResolvable() ? Optional.of(tlsRegistry.get()) : Optional.empty());
         return new HttpSink(vertx, method, url, serializer, maxRetries, jitter, delay, maxPoolSize, maxWaitQueueSize,
                 serializerFactory, tlsConfiguration).sink();
     }

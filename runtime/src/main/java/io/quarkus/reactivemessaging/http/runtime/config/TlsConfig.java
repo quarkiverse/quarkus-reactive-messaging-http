@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import io.quarkus.tls.TlsConfiguration;
 import io.quarkus.tls.TlsConfigurationRegistry;
-import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.net.ClientOptionsBase;
 import io.vertx.core.net.SSLOptions;
 
 public class TlsConfig {
@@ -15,7 +15,7 @@ public class TlsConfig {
                 .orElseGet(() -> tlsRegistry.flatMap(TlsConfigurationRegistry::getDefault));
     }
 
-    public static void configure(HttpClientOptions options, TlsConfiguration tlsConfiguration) {
+    public static void configure(ClientOptionsBase options, TlsConfiguration tlsConfiguration) {
         options.setSsl(true);
 
         if (tlsConfiguration.getTrustStoreOptions() != null) {

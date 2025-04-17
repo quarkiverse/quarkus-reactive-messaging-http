@@ -62,8 +62,9 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
         } else if (guard.prepareToEmit()) {
             try {
                 emitter.emit(new HttpMessage<>(
-                        deserializerFactory.getDeserializer(deserializerName).map(d -> d.deserialize(event.getBody()))
-                                .orElse(event.getBody()),
+                        deserializerFactory.getDeserializer(deserializerName)
+                                .map(d -> d.deserialize(event.body().buffer()))
+                                .orElse(event.body().buffer()),
                         new IncomingHttpMetadata(event),
                         () -> {
                             if (!event.response().ended()) {

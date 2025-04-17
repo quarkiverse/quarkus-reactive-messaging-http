@@ -25,7 +25,7 @@ public class WebSocketClient {
 
     public WsConnection connect(URI uri, long timeout, TimeUnit unit) {
         CompletableFuture<WebSocket> webSocket = new CompletableFuture<>();
-        vertx.createHttpClient().webSocket(uri.getPort(), uri.getHost(),
+        vertx.createWebSocketClient().connect(uri.getPort(), uri.getHost(),
                 uri.getPath() + (uri.getQuery() != null ? "?" + uri.getQuery() : ""), ws -> {
                     if (ws.succeeded()) {
                         webSocket.complete(ws.result());
@@ -42,8 +42,8 @@ public class WebSocketClient {
 
     public static class WsConnection {
 
-        private WebSocket ws;
-        private List<String> responses = new CopyOnWriteArrayList<>();
+        private final WebSocket ws;
+        private final List<String> responses = new CopyOnWriteArrayList<>();
 
         private WsConnection(WebSocket ws) {
             this.ws = ws;

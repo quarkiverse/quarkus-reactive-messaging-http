@@ -162,13 +162,13 @@ public class ReactiveHttpProcessor {
                 if (type.kind() == Type.Kind.PARAMETERIZED_TYPE
                         && (typeName.equals(PUBLISHER_BUILDER) || typeName.equals(PUBLISHER) || typeName.equals(MULTI))) {
                     List<Type> arguments = type.asParameterizedType().arguments();
-                    if (arguments.size() > 0) {
+                    if (!arguments.isEmpty()) {
                         collectPayloadType(payloadClasses, arguments.get(0));
                     }
                 } else {
                     collectPayloadType(payloadClasses, type);
                 }
-            } else if (parameters.size() == 0) {
+            } else if (parameters.isEmpty()) {
                 // @Incoming method can also return a Subscriber[Builder] or Processor[Builder] for message payloads:
                 Type returnType = methodInfo.returnType();
                 if ((returnType.name().equals(SUBSCRIBER_BUILDER)
@@ -178,16 +178,18 @@ public class ReactiveHttpProcessor {
                         && returnType.kind() == Type.Kind.PARAMETERIZED_TYPE) {
                     ParameterizedType parameterizedType = returnType.asParameterizedType();
                     List<Type> arguments = parameterizedType.arguments();
-                    if (arguments.size() > 0) {
+                    if (!arguments.isEmpty()) {
                         collectPayloadType(payloadClasses, arguments.get(0));
                     }
                 }
             }
         }
 
-        payloadClasses.removeAll(asList(JSON_OBJECT.toString(), OBJECT.toString(), JSON_ARRAY.toString(), STRING.toString()));
+        asList(JSON_OBJECT.toString(), OBJECT.toString(), JSON_ARRAY.toString(), STRING.toString())
+                .forEach(payloadClasses::remove);
 
-        reflectiveClasses.produce(new ReflectiveClassBuildItem(true, false, payloadClasses.toArray(new String[] {})));
+        reflectiveClasses.produce(
+                ReflectiveClassBuildItem.builder(payloadClasses.toArray(new String[] {})).methods(true).fields(false).build());
     }
 
     private void collectPayloadType(Set<String> payloadClasses, Type type) {

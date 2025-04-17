@@ -19,7 +19,6 @@ public abstract class SerializerFactoryBase {
     private final List<Serializer<?>> predefinedSerializers = new ArrayList<>();
 
     protected SerializerFactoryBase() {
-
         predefinedSerializers.add(new JsonObjectSerializer());
         predefinedSerializers.add(new JsonArraySerializer());
         predefinedSerializers.add(new StringSerializer());
@@ -50,12 +49,12 @@ public abstract class SerializerFactoryBase {
      * @param <T> type of the payload
      * @return serializer
      */
+    @SuppressWarnings("unchecked")
     public <T> Serializer<T> getSerializer(String name, T payload) {
         if (payload == null) {
             throw new IllegalArgumentException("Payload cannot be null");
         }
         if (name != null) {
-            @SuppressWarnings("unchecked")
             Serializer<T> serializer = (Serializer<T>) serializersByClassName.get(name);
             if (serializer == null) {
                 throw new IllegalArgumentException("No serializer class found for name: " + name);
@@ -68,7 +67,6 @@ public abstract class SerializerFactoryBase {
         }
         for (Serializer<?> serializer : predefinedSerializers) {
             if (serializer.handles(payload)) {
-                //noinspection unchecked
                 return (Serializer<T>) serializer;
             }
         }
@@ -79,5 +77,4 @@ public abstract class SerializerFactoryBase {
     public void addSerializer(String className, Serializer<?> serializer) {
         serializersByClassName.put(className, serializer);
     }
-
 }

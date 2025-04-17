@@ -26,9 +26,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.WebSocket;
+import io.vertx.core.http.WebSocketClient;
+import io.vertx.core.http.WebSocketClientOptions;
 import io.vertx.core.http.WebSocketConnectOptions;
 
 class WebSocketSink {
@@ -39,7 +39,7 @@ class WebSocketSink {
     private static final List<String> supportedSchemes = asList("ws", WSS);
 
     private final URI uri;
-    private final HttpClient httpClient;
+    private final WebSocketClient webSocketClient;
     private final SubscriberBuilder<Message<?>, Void> subscriber;
     private final boolean ssl;
     private final String serializer;
@@ -58,11 +58,11 @@ class WebSocketSink {
         }
         ssl = WSS.equals(scheme);
 
-        HttpClientOptions options = new HttpClientOptions();
+        WebSocketClientOptions options = new WebSocketClientOptions();
 
         tlsConfiguration.ifPresent(config -> TlsConfig.configure(options, config));
 
-        httpClient = vertx.createHttpClient(options);
+        webSocketClient = vertx.createWebSocketClient(options);
         subscriber = ReactiveStreams.<Message<?>> builder()
                 .flatMapCompletionStage(m -> {
                     Uni<Void> send = send(m);
@@ -99,7 +99,7 @@ class WebSocketSink {
 
     private void connect(WebSocketConnectOptions options, Handler<AsyncResult<WebSocket>> handler) {
         log.debug("using a new web socket connection");
-        httpClient.webSocket(options, connectResult -> {
+        webSocketClient.connect(options, connectResult -> {
             if (connectResult.succeeded()) {
                 WebSocket result = connectResult.result();
                 WebSocket oldWs = websocket.getAndSet(result);

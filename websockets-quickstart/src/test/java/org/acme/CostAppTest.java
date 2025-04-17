@@ -26,7 +26,7 @@ public class CostAppTest {
     public void testCostPassingThrough() {
         Vertx testVertx = Vertx.vertx();
 
-        testVertx.createHttpClient().webSocket(testUri.getPort(), testUri.getHost(), testUri.getPath())
+        testVertx.createWebSocketClient().connect(testUri.getPort(), testUri.getHost(), testUri.getPath())
                 .onComplete(
                         result -> {
                             if (result.succeeded()) {
@@ -44,6 +44,5 @@ public class CostAppTest {
                     String resultAsString = get("/collected-costs").getBody().asString();
                     return Double.valueOf(resultAsString);
                 }, comparesEqualTo(31.3));
-
     }
 }

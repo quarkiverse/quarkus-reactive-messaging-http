@@ -21,6 +21,7 @@ import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBa
 import io.quarkus.tls.TlsConfiguration;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.groups.UniRetry;
+import io.smallrye.mutiny.unchecked.Unchecked;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -57,12 +58,8 @@ class HttpSink {
         this.serializerName = serializerName;
 
         WebClientOptions options = new WebClientOptions();
-        if (maxPoolSize.isPresent()) {
-            options.setMaxPoolSize(maxPoolSize.get());
-        }
-        if (maxWaitQueueSize.isPresent()) {
-            options.setMaxWaitQueueSize(maxWaitQueueSize.get());
-        }
+        maxPoolSize.ifPresent(options::setMaxPoolSize);
+        maxWaitQueueSize.ifPresent(options::setMaxWaitQueueSize);
 
         tlsConfiguration.ifPresent(config -> TlsConfig.configure(options, config));
 
@@ -114,14 +111,14 @@ class HttpSink {
         log.debugf("Invoking request: ", toString(request, buffer));
         return request
                 .sendBuffer(buffer)
-                .onItem().transform(resp -> {
+                .onItem().transform(Unchecked.function(resp -> {
                     if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                         return null;
                     } else {
                         throw new VertxException(
                                 "Http request: " + toString(request, buffer) + " failed with response: " + toString(resp));
                     }
-                });
+                }));
     }
 
     private String toString(HttpRequest<?> req, Buffer buffer) {
@@ -164,7 +161,7 @@ class HttpSink {
             return httpHeaders;
         } else if (httpHeaders.isEmpty()) {
             return cloudEventHeaders.entrySet().stream()
-                    .collect(Collectors.toMap(e -> e.getKey(), e -> List.<String> of(e.getValue())));
+                    .collect(Collectors.toMap(Entry::getKey, e -> List.<String> of(e.getValue())));
         } else {
             // httpHeaders might be inmutable
             Map<String, List<String>> mergedMap = new HashMap<>(httpHeaders);
@@ -176,18 +173,12 @@ class HttpSink {
     }
 
     private HttpRequest<Buffer> createRequest(String url) {
-        HttpRequest<Buffer> request;
-        switch (method) {
-            case "POST":
-                request = client.postAbs(url);
-                break;
-            case "PUT":
-                request = client.putAbs(url);
-                break;
-            default:
+        return switch (method) {
+            case "POST" -> client.postAbs(url);
+            case "PUT" -> client.putAbs(url);
+            default ->
                 throw new IllegalArgumentException("Unsupported HTTP method: " + method + "only PUT and POST are supported");
-        }
-        return request;
+        };
     }
 
     private void addQueryParameters(Map<String, List<String>> query, HttpRequest<Buffer> request) {

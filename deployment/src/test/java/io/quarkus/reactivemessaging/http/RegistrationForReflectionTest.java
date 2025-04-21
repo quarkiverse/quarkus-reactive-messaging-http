@@ -86,7 +86,6 @@ public class RegistrationForReflectionTest {
     static class ConsumerBean {
         @Incoming("c1")
         void consume(PT1 payload) {
-
         }
 
         @Incoming("c2")
@@ -191,9 +190,9 @@ public class RegistrationForReflectionTest {
                     .buildRs();
         }
 
-        Subscriber createSubscriber() {
-            return ReactiveStreams.builder()
-                    .buildRs();
+        // ← Changed to a generic method to avoid unchecked conversions
+        <T> Subscriber<T> createSubscriber() {
+            return ReactiveStreams.<T> builder().buildRs();
         }
     }
 
@@ -232,5 +231,4 @@ public class RegistrationForReflectionTest {
 
     static class PT12 {
     }
-
 }

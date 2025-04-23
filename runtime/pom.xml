@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -10,7 +11,8 @@
 
     <artifactId>quarkus-reactive-messaging-http</artifactId>
     <name>Quarkus - SmallRye Reactive Messaging - HTTP and WebSockets - Runtime</name>
-    <description>Connect to HTTP or WebSocket and expose HTTP or WebSocket endpoints for Reactive Messaging</description>
+    <description>Connect to HTTP or WebSocket and expose HTTP or WebSocket endpoints for Reactive Messaging
+    </description>
 
     <dependencies>
         <dependency>
@@ -65,7 +67,8 @@
                             <goal>extension-descriptor</goal>
                         </goals>
                         <configuration>
-                            <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}</deployment>
+                            <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}
+                            </deployment>
                         </configuration>
                     </execution>
                 </executions>
@@ -98,16 +101,17 @@
                 </executions>
             </plugin>
             <plugin>
-              <groupId>io.smallrye</groupId>
-              <artifactId>jandex-maven-plugin</artifactId>
-              <executions>
-                <execution>
-                  <id>make-index</id>
-                  <goals>
-                    <goal>jandex</goal>
-                  </goals>
-                </execution>
-              </executions>
+                <groupId>io.smallrye</groupId>
+                <artifactId>jandex-maven-plugin</artifactId>
+                <version>${jandex-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>make-index</id>
+                        <goals>
+                            <goal>jandex</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

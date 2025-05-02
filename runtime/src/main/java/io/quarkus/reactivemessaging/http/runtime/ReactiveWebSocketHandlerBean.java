@@ -51,9 +51,15 @@ public class ReactiveWebSocketHandlerBean extends ReactiveHandlerBeanBase<WebSoc
                                                     deserializerFactory.getDeserializer(deserializerName)
                                                             .map(d -> d.deserialize(b)).orElse(b),
                                                     new RequestMetadata(event),
-                                                    () -> serverWebSocket.write(Buffer.buffer("ACK")),
-                                                    error -> onUnexpectedError(serverWebSocket, error,
-                                                            "Failed to process incoming web socket message.")));
+                                                    () -> {
+                                                        guard.dequeue();
+                                                        serverWebSocket.write(Buffer.buffer("ACK"));
+                                                    },
+                                                    error -> {
+                                                        guard.dequeue();
+                                                        onUnexpectedError(serverWebSocket, error,
+                                                                "Failed to process incoming web socket message.");
+                                                    }));
                                         } catch (Exception error) {
                                             guard.dequeue();
                                             onUnexpectedError(serverWebSocket, error, "Emitting message failed");

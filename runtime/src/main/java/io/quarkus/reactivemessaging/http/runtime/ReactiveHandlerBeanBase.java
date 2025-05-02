@@ -33,13 +33,13 @@ abstract class ReactiveHandlerBeanBase<ConfigType extends StreamConfigBase, Mess
     }
 
     private void addProcessor(ConfigType streamConfig) {
-        StrictQueueSizeGuard guard = new StrictQueueSizeGuard(streamConfig.bufferSize);
+        // bufferSize is “how many to keep in the buffer” *beyond* the one actively in-flight
+        StrictQueueSizeGuard guard = new StrictQueueSizeGuard(streamConfig.bufferSize + 1);
         Bundle<MessageType> bundle = new Bundle<>(guard);
 
         Multi<MessageType> processor = Multi.createFrom()
                 // emitter with an unbounded queue, we control the size ourselves, with the guard
-                .<MessageType> emitter(bundle::setEmitter, BackPressureStrategy.BUFFER)
-                .onItem().invoke(guard::dequeue);
+                .<MessageType> emitter(bundle::setEmitter, BackPressureStrategy.BUFFER);
         bundle.setProcessor(processor);
         bundle.setPath(streamConfig.path);
         bundle.setDeserializerName(streamConfig.deserializerName);

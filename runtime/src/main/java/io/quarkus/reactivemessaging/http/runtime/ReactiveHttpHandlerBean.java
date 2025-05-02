@@ -59,23 +59,26 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
         if (emitter == null) {
             onUnexpectedError(event, null,
                     "No consumer subscribed for messages sent to Reactive Messaging HTTP endpoint on path: " + path);
-        } else if (guard.prepareToEmit()) {
-            try {
-                emitter.emit(new HttpMessage<>(
-                        deserializerFactory.getDeserializer(deserializerName)
-                                .map(d -> d.deserialize(event.body().buffer()))
-                                .orElse(event.body().buffer()),
-                        new IncomingHttpMetadata(event),
-                        () -> {
-                            if (!event.response().ended()) {
-                                event.response().setStatusCode(202).end();
-                            }
-                        },
-                        error -> onUnexpectedError(event, error, "Failed to process message.")));
-            } catch (Exception any) {
-                guard.dequeue();
-                onUnexpectedError(event, any, "Emitting message failed");
-            }
+            return;
+        }
+
+        Object payload = deserializerFactory.getDeserializer(deserializerName)
+                .map(d -> d.deserialize(event.body().buffer()))
+                .orElse(event.body().buffer());
+        HttpMessage<?> msg = new HttpMessage<>(payload,
+                new IncomingHttpMetadata(event),
+                () -> {
+                    if (!event.response().ended()) {
+                        guard.dequeue();
+                        event.response().setStatusCode(202).end();
+                    }
+                },
+                error -> {
+                    guard.dequeue();
+                    onUnexpectedError(event, error, "Failed to process message.");
+                });
+        if (guard.prepareToEmit()) {
+            emitter.emit(msg);
         } else {
             event.response().setStatusCode(503).end();
         }

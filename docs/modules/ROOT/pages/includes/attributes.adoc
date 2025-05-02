@@ -1,4 +1,4 @@
-:quarkus-version: 3.21.3
+:quarkus-version: 3.22.1
 :project-version: 2.5.0
 :maven-version: 3.8.1+
 

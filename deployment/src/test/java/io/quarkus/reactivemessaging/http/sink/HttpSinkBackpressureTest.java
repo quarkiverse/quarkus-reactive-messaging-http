@@ -17,7 +17,6 @@ import org.hamcrest.Matchers;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -27,7 +26,6 @@ import io.quarkus.reactivemessaging.http.sink.app.HttpEndpoint;
 import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
 import io.quarkus.test.QuarkusUnitTest;
 
-@Disabled("Context Propagation PR broke the way we are testing backpressure - https://github.com/quarkusio/quarkus/pull/46174")
 class HttpSinkBackpressureTest {
 
     @RegisterExtension

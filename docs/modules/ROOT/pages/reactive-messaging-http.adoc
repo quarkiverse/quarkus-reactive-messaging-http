@@ -332,6 +332,9 @@ mp.messaging.outgoing.<channelName>.jitter=0.3
 # A random factor (jitter) is applied to increase the delay when several failures happen.
 mp.messaging.outgoing.<channelName>.delay=1s
 
+#The HTTP method (either `POST` or `PUT`), `POST` by default
+mp.messaging.outgoing.<channelName>.method=PUT
+
 # The maximum size of a queue holding pending messages, i.e. messages waiting to receive an
 # acknowledgment. `1` by default.
 # Recommended to use with protocolVersion=HTTP_2 to reuse connection.

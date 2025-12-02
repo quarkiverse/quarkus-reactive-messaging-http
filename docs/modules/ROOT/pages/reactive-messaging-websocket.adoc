@@ -343,6 +343,13 @@ mp.messaging.outgoing.<channelName>.jitter=0.7
 # A random factor (jitter) is applied to increase the delay when several failures happen.
 mp.messaging.outgoing.<channelName>.delay=2s
 
+# The maximum size of a queue holding pending messages, i.e. messages waiting to receive an
+# acknowledgment. `1` by default.
+mp.messaging.outgoing.<channelName>.maxInflightMessages=1000
+
+# Whether the client waits for the request completion before acknowledging the message. 'true' by default.
+mp.messaging.outgoing.<channelName>.waitForCompletion=true
+
 
 # INCOMING
 

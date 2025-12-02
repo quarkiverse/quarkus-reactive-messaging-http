@@ -42,7 +42,7 @@ import io.vertx.core.http.HttpVersion;
 @ConnectorAttribute(name = "jitter", type = "string", direction = OUTGOING, description = "Configures the random factor when using back-off with maxRetries > 0", defaultValue = QuarkusHttpConnector.DEFAULT_JITTER)
 @ConnectorAttribute(name = "delay", type = "string", direction = OUTGOING, description = "Configures a back-off delay between attempts to send a request. A random factor (jitter) is applied to increase the delay when several failures happen.")
 @ConnectorAttribute(name = "tlsConfigurationName", type = "string", direction = OUTGOING, description = "Name of the TLS configuration to be used from TLS registry.")
-@ConnectorAttribute(name = "maxInflightMessages", type = "int", direction = OUTGOING, description = "The maximum size of a queue holding pending messages, i.e. messages waiting to receive an acknowledgment.", defaultValue = QuarkusHttpConnector.DEFAULT_MAX_INFLIGHT_MESSAGES)
+@ConnectorAttribute(name = "maxInflightMessages", type = "int", direction = OUTGOING, description = "The maximum size of a queue holding pending messages, i.e. messages waiting to receive an acknowledgment. Recommended to use with protocolVersion=HTTP_2 as requests share same connection.", defaultValue = QuarkusHttpConnector.DEFAULT_MAX_INFLIGHT_MESSAGES)
 @ConnectorAttribute(name = "waitForCompletion", type = "boolean", direction = OUTGOING, description = "Whether the client waits for the request completion before acknowledging the message", defaultValue = QuarkusHttpConnector.DEFAULT_WAIT_FOR_COMPLETION)
 @ConnectorAttribute(name = "protocolVersion", type = "string", direction = OUTGOING, description = "HTTP protocol version.", defaultValue = "HTTP_1_1")
 

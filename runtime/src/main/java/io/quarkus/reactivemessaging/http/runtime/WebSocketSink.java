@@ -10,8 +10,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
-import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
-import org.eclipse.microprofile.reactive.streams.operators.SubscriberBuilder;
 import org.jboss.logging.Logger;
 
 import io.quarkus.reactivemessaging.http.runtime.config.TlsConfig;
@@ -19,7 +17,6 @@ import io.quarkus.reactivemessaging.http.runtime.serializers.Serializer;
 import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
 import io.quarkus.tls.TlsConfiguration;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.groups.UniRetry;
 import io.smallrye.mutiny.vertx.AsyncResultUni;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -31,7 +28,7 @@ import io.vertx.core.http.WebSocketClient;
 import io.vertx.core.http.WebSocketClientOptions;
 import io.vertx.core.http.WebSocketConnectOptions;
 
-class WebSocketSink {
+class WebSocketSink extends AbstractSink {
 
     private static final Logger log = Logger.getLogger(WebSocketSink.class);
 
@@ -40,14 +37,14 @@ class WebSocketSink {
 
     private final URI uri;
     private final WebSocketClient webSocketClient;
-    private final SubscriberBuilder<Message<?>, Void> subscriber;
     private final boolean ssl;
     private final String serializer;
     private final SerializerFactoryBase serializerFactory;
 
     WebSocketSink(Vertx vertx, URI uri, String serializer, SerializerFactoryBase serializerFactory,
             int maxRetries, Optional<Duration> delay, double jitter,
-            Optional<TlsConfiguration> tlsConfiguration) {
+            Optional<TlsConfiguration> tlsConfiguration, long inflights, boolean waitForCompletion) {
+        super(log, uri.toString(), maxRetries, jitter, delay, inflights, waitForCompletion);
         this.uri = uri;
         this.serializerFactory = serializerFactory;
         this.serializer = serializer;
@@ -63,36 +60,6 @@ class WebSocketSink {
         tlsConfiguration.ifPresent(config -> TlsConfig.configure(options, config));
 
         webSocketClient = vertx.createWebSocketClient(options);
-        subscriber = ReactiveStreams.<Message<?>> builder()
-                .flatMapCompletionStage(m -> {
-                    Uni<Void> send = send(m);
-
-                    log.debugf("maxRetries: %d", maxRetries);
-                    if (maxRetries > 0) {
-                        UniRetry<Void> retry = send.onFailure().retry();
-                        if (delay.isPresent()) {
-                            retry = retry.withBackOff(delay.get()).withJitter(jitter);
-                        }
-                        send = retry.atMost(maxRetries);
-                    }
-
-                    return send
-                            .onItemOrFailure().transformToUni(
-                                    (result, error) -> {
-                                        if (error != null) {
-                                            return Uni.createFrom().completionStage(m.nack(error).thenApply(x -> {
-                                                log.debug("error responding", error);
-                                                return m;
-                                            }));
-                                        }
-                                        return Uni.createFrom().completionStage(m.ack().thenApply(x -> {
-                                            log.debug("responded with success", error);
-                                            return m;
-                                        }));
-                                    })
-                            .subscribeAsCompletionStage();
-                })
-                .ignore();
     }
 
     private final AtomicReference<WebSocket> websocket = new AtomicReference<>();
@@ -119,7 +86,8 @@ class WebSocketSink {
         });
     }
 
-    private Uni<Void> send(Message<?> message) {
+    @Override
+    protected Uni<Void> send(Message<?> message) {
         WebSocketConnectOptions options = options();
         Serializer<Object> serializer = serializerFactory.getSerializer(this.serializer, message.getPayload());
         Buffer serialized = serializer.serialize(message.getPayload());
@@ -162,9 +130,5 @@ class WebSocketSink {
             }
             handler.handle(writeResult);
         });
-    }
-
-    SubscriberBuilder<Message<?>, Void> sink() {
-        return subscriber;
     }
 }

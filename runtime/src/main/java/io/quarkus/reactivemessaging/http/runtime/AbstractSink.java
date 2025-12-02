@@ -38,14 +38,14 @@ abstract class AbstractSink {
                     .onItemOrFailure().transformToUni((result, error) -> {
                         if (error != null) {
                             return Uni.createFrom().completionStage(
-                                    m.nack(error).thenRun(() -> log.tracef(error, "error responding to %s", url)));
+                                    m.nack(error).thenRun(() -> log.debugf(error, "Error responding to %s", url)));
                         }
                         return Uni.createFrom()
-                                .completionStage(m.ack().thenRun(() -> log.tracef("responded with success to %s", url)));
+                                .completionStage(m.ack().thenRun(() -> log.tracef("Responded with success to %s", url)));
                     });
         });
         this.subscriber = MultiUtils.via(processor,
-                m -> m.onFailure().invoke(f -> log.warnf("Unable to dispatch message to %s", url)));
+                m -> m.onFailure().invoke(f -> log.debugf("Unable to dispatch message to %s", url)));
     }
 
     protected abstract Uni<Void> send(Message<?> message);

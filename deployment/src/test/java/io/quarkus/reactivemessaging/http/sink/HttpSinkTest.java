@@ -6,10 +6,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.hasSize;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +82,7 @@ class HttpSinkTest {
     // todo add content-type headers from serializer?
     @Test
     void shouldPassHeadersPathParamAndQueryParam() {
-        String id = "10";
+        String id = UUID.randomUUID().toString();
         OutgoingHttpMetadata metadata = new OutgoingHttpMetadata.Builder()
                 .addHeader("myHeader", "myValue")
                 .addPathParameter("id", id)
@@ -91,7 +91,7 @@ class HttpSinkTest {
         emitter.emitMessageWithPathParam(Message.of(new Dto("foo")).addMetadata(metadata));
 
         await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> httpEndpoint.getIdentifiableRequests(), aMapWithSize(1));
+                .untilAsserted(() -> assertThat(httpEndpoint.getIdentifiableRequests()).containsKey(id));
 
         HttpEndpoint.Request request = httpEndpoint.getIdentifiableRequests().get(id);
         assertThat(new JsonObject(request.getBody())).isEqualTo(new JsonObject().put("field", "foo"));
@@ -101,7 +101,7 @@ class HttpSinkTest {
 
     @Test
     void shouldPassHeadersAndCloudEventMetaData() {
-        String id = "10";
+        String id = UUID.randomUUID().toString();
         OutgoingHttpMetadata metadata = new OutgoingHttpMetadata.Builder()
                 .addHeader("myHeader", "myValue")
                 .addPathParameter("id", id)
@@ -112,7 +112,7 @@ class HttpSinkTest {
         emitter.emitMessageWithPathParam(Message.of(new Dto("foo")).addMetadata(metadata).addMetadata(cloudEventMetadata));
 
         await().atMost(10, TimeUnit.SECONDS)
-                .until(() -> httpEndpoint.getIdentifiableRequests(), aMapWithSize(1));
+                .untilAsserted(() -> assertThat(httpEndpoint.getIdentifiableRequests()).containsKey(id));
 
         HttpEndpoint.Request request = httpEndpoint.getIdentifiableRequests().get(id);
         assertThat(new JsonObject(request.getBody())).isEqualTo(new JsonObject().put("field", "foo"));

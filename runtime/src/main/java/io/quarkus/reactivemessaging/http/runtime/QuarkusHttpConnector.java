@@ -110,7 +110,7 @@ public class QuarkusHttpConnector implements InboundConnector, OutboundConnector
             return HttpVersion.valueOf(versionAsString);
         } catch (IllegalArgumentException e) {
             String error = "Unsupported HTTP protocol version: " + versionAsString + ". The supported versions are: "
-                    + String.join(", ", Arrays.stream(HttpVersion.values()).map(HttpVersion::name).toList());
+                    + Arrays.toString(HttpVersion.values());
             log.warn(error, e);
             throw new IllegalArgumentException(error);
         }

@@ -160,7 +160,7 @@ class HttpSink extends AbstractSink {
             case "POST" -> client.postAbs(url);
             case "PUT" -> client.putAbs(url);
             default ->
-                throw new IllegalArgumentException("Unsupported HTTP method: " + method + "only PUT and POST are supported");
+                throw new IllegalArgumentException("Unsupported HTTP method: " + method + " only PUT and POST are supported");
         };
     }
 

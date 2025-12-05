@@ -98,10 +98,9 @@ public class QuarkusHttpConnector implements InboundConnector, OutboundConnector
         try {
             return HttpMethod.valueOf(methodAsString);
         } catch (IllegalArgumentException e) {
-            String error = "Unsupported HTTP method: " + methodAsString + ". The supported methods are: "
-                    + HttpMethod.values();
-            log.warn(error, e);
-            throw new IllegalArgumentException(error);
+            log.warnf("Unsupported HTTP method: %s. The supported methods are: %s",
+                methodAsString, HttpMethod.values());
+            throw e;
         }
     }
 
@@ -109,10 +108,9 @@ public class QuarkusHttpConnector implements InboundConnector, OutboundConnector
         try {
             return HttpVersion.valueOf(versionAsString);
         } catch (IllegalArgumentException e) {
-            String error = "Unsupported HTTP protocol version: " + versionAsString + ". The supported versions are: "
-                    + Arrays.toString(HttpVersion.values());
-            log.warn(error, e);
-            throw new IllegalArgumentException(error);
+            log.warnf("Unsupported HTTP protocol version: %s. The supported versions are: %s",
+                versionAsString, Arrays.toString(HttpVersion.values()));
+            throw e;
         }
     }
 

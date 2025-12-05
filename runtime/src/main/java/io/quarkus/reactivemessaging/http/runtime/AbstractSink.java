@@ -14,6 +14,7 @@ import io.smallrye.reactive.messaging.providers.helpers.SenderProcessor;
 
 abstract class AbstractSink {
 
+    private final SenderProcessor processor;
     private final Flow.Subscriber<? extends Message<?>> subscriber;
 
     public AbstractSink(Logger log, String url,
@@ -22,7 +23,7 @@ abstract class AbstractSink {
         if (inflights <= 0) {
             throw new IllegalArgumentException("Inflights must be greater than 0, but was " + inflights);
         }
-        SenderProcessor processor = new SenderProcessor(inflights, waitForCompletion, m -> {
+        this.processor = new SenderProcessor(inflights, waitForCompletion, m -> {
             Uni<Void> send = send(m);
 
             log.debugf("maxRetries: %d for %s", maxRetries, url);
@@ -52,5 +53,11 @@ abstract class AbstractSink {
 
     Flow.Subscriber<? extends Message<?>> sink() {
         return subscriber;
+    }
+
+    void close() {
+        if (processor != null) {
+            processor.cancel();
+        }
     }
 }

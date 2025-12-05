@@ -8,10 +8,16 @@ import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Dire
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Flow;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.BeforeDestroyed;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.event.Reception;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
@@ -58,6 +64,8 @@ public class QuarkusWebSocketConnector implements InboundConnector, OutboundConn
 
     public static final Integer DEFAULT_SOURCE_BUFFER = Integer.valueOf(DEFAULT_SOURCE_BUFFER_STR);
 
+    private final List<WebSocketSink> sinks = new CopyOnWriteArrayList<>();
+
     @Inject
     ReactiveWebSocketHandlerBean handlerBean;
 
@@ -94,7 +102,14 @@ public class QuarkusWebSocketConnector implements InboundConnector, OutboundConn
         Optional<TlsConfiguration> tlsConfiguration = TlsConfig.lookupConfig(config.getTlsConfigurationName(),
                 tlsRegistry.isResolvable() ? Optional.of(tlsRegistry.get()) : Optional.empty());
 
-        return new WebSocketSink(vertx, url, serializer, serializerFactory, maxRetries, delay, jitter, tlsConfiguration,
-                inflights, waitForCompletion).sink();
+        WebSocketSink webSocketSink = new WebSocketSink(vertx, url, serializer, serializerFactory,
+                maxRetries, delay, jitter, tlsConfiguration, inflights, waitForCompletion);
+        sinks.add(webSocketSink);
+        return webSocketSink.sink();
+    }
+
+    public void terminate(
+            @Observes(notifyObserver = Reception.IF_EXISTS) @Priority(50) @BeforeDestroyed(ApplicationScoped.class) Object event) {
+        sinks.forEach(WebSocketSink::close);
     }
 }

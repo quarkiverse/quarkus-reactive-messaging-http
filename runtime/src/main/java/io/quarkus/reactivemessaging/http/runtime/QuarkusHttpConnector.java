@@ -6,10 +6,16 @@ import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Dire
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Flow;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.BeforeDestroyed;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.event.Reception;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
@@ -67,6 +73,8 @@ public class QuarkusHttpConnector implements InboundConnector, OutboundConnector
 
     public static final String NAME = "quarkus-http";
 
+    private final List<HttpSink> sinks = new CopyOnWriteArrayList<>();
+
     @Inject
     ReactiveHttpHandlerBean handlerBean;
 
@@ -99,7 +107,7 @@ public class QuarkusHttpConnector implements InboundConnector, OutboundConnector
             return HttpMethod.valueOf(methodAsString);
         } catch (IllegalArgumentException e) {
             log.warnf("Unsupported HTTP method: %s. The supported methods are: %s",
-                methodAsString, HttpMethod.values());
+                    methodAsString, HttpMethod.values());
             throw e;
         }
     }
@@ -109,7 +117,7 @@ public class QuarkusHttpConnector implements InboundConnector, OutboundConnector
             return HttpVersion.valueOf(versionAsString);
         } catch (IllegalArgumentException e) {
             log.warnf("Unsupported HTTP protocol version: %s. The supported versions are: %s",
-                versionAsString, Arrays.toString(HttpVersion.values()));
+                    versionAsString, Arrays.toString(HttpVersion.values()));
             throw e;
         }
     }
@@ -142,8 +150,16 @@ public class QuarkusHttpConnector implements InboundConnector, OutboundConnector
 
         Optional<TlsConfiguration> tlsConfiguration = TlsConfig.lookupConfig(config.getTlsConfigurationName(),
                 tlsRegistry.isResolvable() ? Optional.of(tlsRegistry.get()) : Optional.empty());
-        return new HttpSink(vertx, method, url, serializer, maxRetries, jitter, delay, maxPoolSize, maxWaitQueueSize,
-                serializerFactory, tlsConfiguration, inflights, waitForCompletion, protocolVersion).sink();
+        HttpSink httpSink = new HttpSink(vertx, method, url, serializer, maxRetries, jitter, delay, maxPoolSize,
+                maxWaitQueueSize,
+                serializerFactory, tlsConfiguration, inflights, waitForCompletion, protocolVersion);
+        sinks.add(httpSink);
+        return httpSink.sink();
+    }
+
+    public void terminate(
+            @Observes(notifyObserver = Reception.IF_EXISTS) @Priority(50) @BeforeDestroyed(ApplicationScoped.class) Object event) {
+        sinks.forEach(HttpSink::close);
     }
 
 }

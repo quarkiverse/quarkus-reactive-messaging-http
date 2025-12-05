@@ -1,35 +1,39 @@
 package io.quarkus.reactivemessaging.http.runtime;
 
 import static io.quarkus.reactivemessaging.http.runtime.QuarkusWebSocketConnector.DEFAULT_JITTER;
+import static io.quarkus.reactivemessaging.http.runtime.QuarkusWebSocketConnector.DEFAULT_MAX_INFLIGHT_MESSAGES;
+import static io.quarkus.reactivemessaging.http.runtime.QuarkusWebSocketConnector.DEFAULT_WAIT_FOR_COMPLETION;
 import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.INCOMING;
 import static io.smallrye.reactive.messaging.annotations.ConnectorAttribute.Direction.OUTGOING;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Flow;
 
+import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.BeforeDestroyed;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.event.Reception;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.spi.Connector;
-import org.eclipse.microprofile.reactive.messaging.spi.IncomingConnectorFactory;
-import org.eclipse.microprofile.reactive.messaging.spi.OutgoingConnectorFactory;
-import org.eclipse.microprofile.reactive.streams.operators.PublisherBuilder;
-import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
-import org.eclipse.microprofile.reactive.streams.operators.SubscriberBuilder;
 
 import io.quarkus.reactivemessaging.http.runtime.config.TlsConfig;
 import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
 import io.quarkus.runtime.configuration.DurationConverter;
 import io.quarkus.tls.TlsConfiguration;
 import io.quarkus.tls.TlsConfigurationRegistry;
-import io.smallrye.mutiny.Multi;
 import io.smallrye.reactive.messaging.annotations.ConnectorAttribute;
+import io.smallrye.reactive.messaging.connector.InboundConnector;
+import io.smallrye.reactive.messaging.connector.OutboundConnector;
 import io.vertx.core.Vertx;
-import mutiny.zero.flow.adapters.AdaptersToReactiveStreams;
 
 /**
  * Quarkus-specific reactive messaging connector for web sockets
@@ -42,19 +46,25 @@ import mutiny.zero.flow.adapters.AdaptersToReactiveStreams;
 @ConnectorAttribute(name = "jitter", type = "double", direction = OUTGOING, description = "Configures the random factor when using back-off with maxAttempts > 1", defaultValue = DEFAULT_JITTER)
 @ConnectorAttribute(name = "delay", type = "string", direction = OUTGOING, description = "Configures a back-off delay between attempts to send a request. A random factor (jitter) is applied to increase the delay when several failures happen.")
 @ConnectorAttribute(name = "tlsConfigurationName", type = "string", direction = OUTGOING, description = "Name of the TLS configuration to be used from TLS registry.")
+@ConnectorAttribute(name = "maxInflightMessages", type = "int", direction = OUTGOING, description = "The maximum size of a queue holding pending messages, i.e. messages waiting to receive an acknowledgment.", defaultValue = DEFAULT_MAX_INFLIGHT_MESSAGES)
+@ConnectorAttribute(name = "waitForCompletion", type = "boolean", direction = OUTGOING, description = "Whether the client waits for the request completion before acknowledging the message", defaultValue = DEFAULT_WAIT_FOR_COMPLETION)
 
 @ConnectorAttribute(name = "path", type = "string", direction = INCOMING, description = "The path of the endpoint", mandatory = true)
 @ConnectorAttribute(name = "buffer-size", type = "string", direction = INCOMING, description = "Web socket endpoint buffers messages if a consumer is not able to keep up. This setting specifies the size of the buffer.", defaultValue = QuarkusHttpConnector.DEFAULT_SOURCE_BUFFER_STR)
 @ApplicationScoped
-public class QuarkusWebSocketConnector implements IncomingConnectorFactory, OutgoingConnectorFactory {
+public class QuarkusWebSocketConnector implements InboundConnector, OutboundConnector {
     public static final String NAME = "quarkus-websocket";
 
     static final String DEFAULT_JITTER = "0.5";
     static final String DEFAULT_MAX_ATTEMPTS_STR = "1";
+    static final String DEFAULT_MAX_INFLIGHT_MESSAGES = "1";
+    static final String DEFAULT_WAIT_FOR_COMPLETION = "true";
 
     static final String DEFAULT_SOURCE_BUFFER_STR = "8";
 
     public static final Integer DEFAULT_SOURCE_BUFFER = Integer.valueOf(DEFAULT_SOURCE_BUFFER_STR);
+
+    private final List<WebSocketSink> sinks = new CopyOnWriteArrayList<>();
 
     @Inject
     ReactiveWebSocketHandlerBean handlerBean;
@@ -69,17 +79,16 @@ public class QuarkusWebSocketConnector implements IncomingConnectorFactory, Outg
     Instance<TlsConfigurationRegistry> tlsRegistry;
 
     @Override
-    public PublisherBuilder<WebSocketMessage<?>> getPublisherBuilder(Config configuration) {
+    public Flow.Publisher<? extends Message<?>> getPublisher(Config configuration) {
         QuarkusWebSocketConnectorIncomingConfiguration config = new QuarkusWebSocketConnectorIncomingConfiguration(
                 configuration);
         String path = config.getPath();
 
-        Multi<WebSocketMessage<?>> processor = handlerBean.getProcessor(path);
-        return ReactiveStreams.fromPublisher(AdaptersToReactiveStreams.publisher(processor));
+        return handlerBean.getProcessor(path);
     }
 
     @Override
-    public SubscriberBuilder<? extends Message<?>, Void> getSubscriberBuilder(Config configuration) {
+    public Flow.Subscriber<? extends Message<?>> getSubscriber(Config configuration) {
         QuarkusWebSocketConnectorOutgoingConfiguration config = new QuarkusWebSocketConnectorOutgoingConfiguration(
                 configuration);
         String serializer = config.getSerializer().orElse(null);
@@ -87,10 +96,20 @@ public class QuarkusWebSocketConnector implements IncomingConnectorFactory, Outg
         Double jitter = config.getJitter();
         Integer maxRetries = config.getMaxRetries();
         URI url = URI.create(config.getUrl());
+        long inflights = config.getMaxInflightMessages();
+        boolean waitForCompletion = config.getWaitForCompletion();
 
         Optional<TlsConfiguration> tlsConfiguration = TlsConfig.lookupConfig(config.getTlsConfigurationName(),
                 tlsRegistry.isResolvable() ? Optional.of(tlsRegistry.get()) : Optional.empty());
 
-        return new WebSocketSink(vertx, url, serializer, serializerFactory, maxRetries, delay, jitter, tlsConfiguration).sink();
+        WebSocketSink webSocketSink = new WebSocketSink(vertx, url, serializer, serializerFactory,
+                maxRetries, delay, jitter, tlsConfiguration, inflights, waitForCompletion);
+        sinks.add(webSocketSink);
+        return webSocketSink.sink();
+    }
+
+    public void terminate(
+            @Observes(notifyObserver = Reception.IF_EXISTS) @Priority(50) @BeforeDestroyed(ApplicationScoped.class) Object event) {
+        sinks.forEach(WebSocketSink::close);
     }
 }

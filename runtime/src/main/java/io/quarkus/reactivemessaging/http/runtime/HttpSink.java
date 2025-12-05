@@ -11,8 +11,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.microprofile.reactive.messaging.Message;
-import org.eclipse.microprofile.reactive.streams.operators.ReactiveStreams;
-import org.eclipse.microprofile.reactive.streams.operators.SubscriberBuilder;
 import org.jboss.logging.Logger;
 
 import io.quarkus.reactivemessaging.http.runtime.config.TlsConfig;
@@ -20,23 +18,22 @@ import io.quarkus.reactivemessaging.http.runtime.serializers.Serializer;
 import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
 import io.quarkus.tls.TlsConfiguration;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.groups.UniRetry;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
+import io.vertx.core.http.HttpVersion;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.mutiny.core.buffer.Buffer;
 import io.vertx.mutiny.ext.web.client.HttpRequest;
 import io.vertx.mutiny.ext.web.client.HttpResponse;
 import io.vertx.mutiny.ext.web.client.WebClient;
 
-class HttpSink {
+class HttpSink extends AbstractSink {
 
     private static final Logger log = Logger.getLogger(HttpSink.class);
 
     private static final String[] SUPPORTED_SCHEMES = { "http:", "https:" };
 
-    private final SubscriberBuilder<Message<?>, Void> subscriber;
     private final WebClient client;
     private final String method;
     private final String url;
@@ -51,7 +48,11 @@ class HttpSink {
             Optional<Integer> maxPoolSize,
             Optional<Integer> maxWaitQueueSize,
             SerializerFactoryBase serializerFactory,
-            Optional<TlsConfiguration> tlsConfiguration) {
+            Optional<TlsConfiguration> tlsConfiguration,
+            long inflights,
+            boolean waitForCompletion,
+            HttpVersion protocolVersion) {
+        super(log, url, maxRetries, jitter, delay, inflights, waitForCompletion);
         this.method = method;
         this.url = url;
         this.serializerFactory = serializerFactory;
@@ -63,39 +64,21 @@ class HttpSink {
 
         tlsConfiguration.ifPresent(config -> TlsConfig.configure(options, config));
 
+        options.setProtocolVersion(protocolVersion);
+        if (protocolVersion == HttpVersion.HTTP_2 && tlsConfiguration.isPresent()) {
+            // Required for HTTP/2. See https://vertx.io/docs/vertx-core/java/#_creating_an_http_client
+            options.setUseAlpn(true);
+        }
+
         client = WebClient.create(io.vertx.mutiny.core.Vertx.newInstance(vertx), options);
 
         if (Arrays.stream(SUPPORTED_SCHEMES).noneMatch(url.toLowerCase()::startsWith)) {
             throw new IllegalArgumentException("Unsupported scheme for the http connector in URL: " + url);
         }
-
-        subscriber = ReactiveStreams.<Message<?>> builder()
-                .flatMapCompletionStage(m -> {
-                    Uni<Void> send = send(m);
-                    if (maxRetries > 0) {
-                        UniRetry<Void> retry = send.onFailure().retry();
-                        if (delay.isPresent()) {
-                            retry = retry.withBackOff(delay.get()).withJitter(jitter);
-                        }
-                        send = retry.atMost(maxRetries);
-                    }
-
-                    return send
-                            .onItemOrFailure().transformToUni((result, error) -> {
-                                if (error != null) {
-                                    return Uni.createFrom().completionStage(m.nack(error).thenApply(x -> m));
-                                }
-                                return Uni.createFrom().completionStage(m.ack().thenApply(x -> m));
-                            })
-                            .subscribeAsCompletionStage();
-                }).ignore();
     }
 
-    SubscriberBuilder<Message<?>, Void> sink() {
-        return subscriber;
-    }
-
-    private Uni<Void> send(Message<?> message) {
+    @Override
+    protected Uni<Void> send(Message<?> message) {
         HttpRequest<?> request = toHttpRequest(message);
         return Uni.createFrom().item(message.getPayload())
                 .onItem().transform(this::serialize)
@@ -177,7 +160,7 @@ class HttpSink {
             case "POST" -> client.postAbs(url);
             case "PUT" -> client.putAbs(url);
             default ->
-                throw new IllegalArgumentException("Unsupported HTTP method: " + method + "only PUT and POST are supported");
+                throw new IllegalArgumentException("Unsupported HTTP method: " + method + " only PUT and POST are supported");
         };
     }
 

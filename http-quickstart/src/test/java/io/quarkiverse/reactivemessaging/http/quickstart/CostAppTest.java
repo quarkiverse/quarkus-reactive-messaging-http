@@ -1,4 +1,4 @@
-package org.acme;
+package io.quarkiverse.reactivemessaging.http.quickstart;
 
 import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;

@@ -6,7 +6,6 @@
         <artifactId>quarkus-reactive-messaging-http-parent</artifactId>
         <version>999-SNAPSHOT</version>
     </parent>
-    <groupId>org.acme</groupId>
     <artifactId>reactive-messaging-http-quickstart</artifactId>
     <name>Quarkus - SmallRye Reactive Messaging - HTTP Quickstart</name>
     <dependencies>

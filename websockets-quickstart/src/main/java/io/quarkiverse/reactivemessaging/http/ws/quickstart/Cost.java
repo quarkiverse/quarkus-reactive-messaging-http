@@ -1,4 +1,4 @@
-package org.acme.reactivews;
+package io.quarkiverse.reactivemessaging.http.ws.quickstart;
 
 public class Cost {
     private double value;

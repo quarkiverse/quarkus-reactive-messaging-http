@@ -1,4 +1,4 @@
-package org.acme.reactivehttp;
+package io.quarkiverse.reactivemessaging.http.quickstart;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 

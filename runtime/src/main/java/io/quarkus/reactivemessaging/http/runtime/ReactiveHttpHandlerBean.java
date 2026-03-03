@@ -71,7 +71,7 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
                                 event.response().setStatusCode(202).end();
                             }
                         },
-                        error -> onUnexpectedError(event, error, "Failed to process message.")));
+                        error -> onUnexpectedError(event, error, "Failed to process message")));
             } catch (Exception any) {
                 guard.dequeue();
                 onUnexpectedError(event, any, "Emitting message failed");
@@ -84,7 +84,8 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
     private void onUnexpectedError(RoutingContext event, Throwable error, String message) {
         if (!event.response().ended()) {
             event.response().setStatusCode(500).end("Unexpected error while processing the message");
-            log.error(message, error);
+            log.error(message + (error != null ? ": " + error.getMessage() : ""));
+            log.debug(message, error);
         }
     }
 

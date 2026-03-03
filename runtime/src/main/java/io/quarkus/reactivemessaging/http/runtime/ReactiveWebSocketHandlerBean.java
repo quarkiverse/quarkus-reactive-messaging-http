@@ -36,7 +36,7 @@ public class ReactiveWebSocketHandlerBean extends ReactiveHandlerBeanBase<WebSoc
         event.request().toWebSocket(
                 webSocket -> {
                     if (webSocket.failed()) {
-                        log.error("failed to connect web socket", webSocket.cause());
+                        log(webSocket.cause(), "failed to connect web socket");
                     } else {
                         ServerWebSocket serverWebSocket = webSocket.result();
                         serverWebSocket.handler(
@@ -87,9 +87,14 @@ public class ReactiveWebSocketHandlerBean extends ReactiveHandlerBeanBase<WebSoc
     }
 
     private void onUnexpectedError(ServerWebSocket serverWebSocket, Throwable error, String message) {
-        log.error(message, error);
+        log(error, message);
         // TODO some error message for the client? exception mapper would be best...
         serverWebSocket.close((short) 3500, "Unexpected error while processing the message");
+    }
+
+    private void log(Throwable error, String message) {
+        log.error(message + (error != null ? ": " + error.getMessage() : ""));
+        log.debug(message, error);
     }
 
     Multi<WebSocketMessage<?>> getProcessor(String path) {

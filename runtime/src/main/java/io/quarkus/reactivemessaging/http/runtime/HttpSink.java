@@ -99,13 +99,17 @@ class HttpSink extends AbstractSink {
                         return null;
                     } else {
                         throw new VertxException(
-                                "Http request: " + toString(request, buffer) + " failed with response: " + toString(resp));
+                                "Http request: " + toString(request) + " failed with response: " + toString(resp));
                     }
                 }));
     }
 
+    private String toString(HttpRequest<?> req) {
+        return "URI:" + req.uri() + " Method:" + req.method() + " Headers: " + req.headers();
+    }
+
     private String toString(HttpRequest<?> req, Buffer buffer) {
-        return "URI:" + req.uri() + " Method:" + req.method() + " Headers: " + req.headers() + " Body: " + buffer;
+        return toString(req) + " Body: " + buffer;
     }
 
     private String toString(HttpResponse<?> resp) {

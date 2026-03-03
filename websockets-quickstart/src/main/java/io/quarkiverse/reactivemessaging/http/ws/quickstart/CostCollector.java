@@ -1,4 +1,4 @@
-package org.acme.reactivews;
+package io.quarkiverse.reactivemessaging.http.ws.quickstart;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.GET;

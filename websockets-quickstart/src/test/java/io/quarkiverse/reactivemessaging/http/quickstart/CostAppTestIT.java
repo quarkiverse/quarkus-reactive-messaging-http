@@ -1,4 +1,4 @@
-package org.acme;
+package io.quarkiverse.reactivemessaging.http.quickstart;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 

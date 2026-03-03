@@ -1,4 +1,4 @@
-package org.acme.reactivehttp;
+package io.quarkiverse.reactivemessaging.http.quickstart;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -23,14 +23,15 @@ import io.quarkus.reactivemessaging.http.runtime.QuarkusWebSocketConnector;
 @Singleton
 public class ReactiveHttpConfig {
     private static final String CONNECTOR = ".connector";
+    private static final String CHANNEL_NAME_SEGMENT = "(?:[^.]+|\"[^\"]+\")";
 
     private static final String MP_MSG_IN = "mp.messaging.incoming.";
     private static final String IN_KEY = "mp.messaging.incoming.%s.%s";
-    private static final Pattern IN_PATTERN = Pattern.compile(quote(MP_MSG_IN) + "[^.]+" + quote(CONNECTOR));
+    private static final Pattern IN_PATTERN = Pattern.compile(quote(MP_MSG_IN) + CHANNEL_NAME_SEGMENT + quote(CONNECTOR));
 
     private static final String MP_MSG_OUT = "mp.messaging.outgoing.";
     private static final String OUT_KEY = "mp.messaging.outgoing.%s.%s";
-    private static final Pattern OUT_PATTERN = Pattern.compile(quote(MP_MSG_OUT) + "[^.]+" + quote(CONNECTOR));
+    private static final Pattern OUT_PATTERN = Pattern.compile(quote(MP_MSG_OUT) + CHANNEL_NAME_SEGMENT + quote(CONNECTOR));
 
     private List<HttpStreamConfig> httpConfigs;
     private List<WebSocketStreamConfig> websocketConfigs;

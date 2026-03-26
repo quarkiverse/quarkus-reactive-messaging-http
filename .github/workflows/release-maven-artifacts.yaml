@@ -1,0 +1,46 @@
+name: 'Release: Maven Artifacts'
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.GCP_STREAMX_RELEASES_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_STREAMX_RELEASES_RELEASE_DEPLOY_SA }}
+          token_format: access_token
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github.actions@streamx.dev"
+          git config --global user.name "${GITHUB_ACTOR}"
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_SECRET_KEY }}" > ~/.ssh/id_rsa
+          chmod 0600 ~/.ssh/id_rsa
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Release prepare
+        id: prepare-release
+        run: |
+          mvn -B release:prepare
+
+      - name: Release perform
+        run: |
+          mvn -B release:perform

@@ -11,14 +11,22 @@
   <version>999-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Quarkus - SmallRye Reactive Messaging - HTTP and WebSockets - Parent</name>
+
+  <distributionManagement>
+    <repository>
+      <id>streamx-maven-public-releases</id>
+      <url>artifactregistry://europe-west1-maven.pkg.dev/streamx-releases/streamx-maven-public-releases</url>
+    </repository>
+  </distributionManagement>
+
   <modules>
     <module>deployment</module>
     <module>runtime</module>
   </modules>
   <scm>
-    <connection>scm:git:git@github.com:quarkiverse/quarkus-reactive-messaging-http.git</connection>
-    <developerConnection>scm:git:git@github.com:quarkiverse/quarkus-reactive-messaging-http.git</developerConnection>
-    <url>https://github.com/quarkiverse/quarkus-reactive-messaging-http</url>
+    <connection>scm:git:git@github.com:streamx-com/quarkus-reactive-messaging-http.git</connection>
+    <developerConnection>scm:git:git@github.com:streamx-com/quarkus-reactive-messaging-http.git</developerConnection>
+    <url>https://github.com/streamx-com/quarkus-reactive-messaging-http</url>
     <tag>HEAD</tag>
   </scm>
   <properties>

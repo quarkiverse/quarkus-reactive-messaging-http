@@ -39,7 +39,8 @@ abstract class ReactiveHandlerBeanBase<ConfigType extends StreamConfigBase, Mess
         Multi<MessageType> processor = Multi.createFrom()
                 // emitter with an unbounded queue, we control the size ourselves, with the guard
                 .<MessageType> emitter(bundle::setEmitter, BackPressureStrategy.BUFFER)
-                .onItem().invoke(guard::dequeue);
+                .onItem().invoke(guard::dequeue)
+                .onRequest().invoke(guard::removeFromQueue);
         bundle.setProcessor(processor);
         bundle.setPath(streamConfig.path);
         bundle.setDeserializerName(streamConfig.deserializerName);

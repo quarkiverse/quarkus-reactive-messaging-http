@@ -61,15 +61,14 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
                     "No consumer subscribed for messages sent to Reactive Messaging HTTP endpoint on path: " + path);
         } else if (guard.prepareToEmit()) {
             try {
+                guard.putInQueue(() -> statusEvent(event));
                 emitter.emit(new HttpMessage<>(
                         deserializerFactory.getDeserializer(deserializerName)
                                 .map(d -> d.deserialize(event.body().buffer()))
                                 .orElse(event.body().buffer()),
                         new IncomingHttpMetadata(event),
                         () -> {
-                            if (!event.response().ended()) {
-                                event.response().setStatusCode(202).end();
-                            }
+                            ackEvent(event);
                         },
                         error -> onUnexpectedError(event, error, "Failed to process message")));
             } catch (Exception any) {
@@ -77,15 +76,49 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
                 onUnexpectedError(event, any, "Emitting message failed");
             }
         } else {
-            event.response().setStatusCode(503).end();
+            nackEvent(event);
         }
     }
 
     private void onUnexpectedError(RoutingContext event, Throwable error, String message) {
-        if (!event.response().ended()) {
-            event.response().setStatusCode(500).end("Unexpected error while processing the message");
-            log.error(message + (error != null ? ": " + error.getMessage() : ""));
-            log.debug(message, error);
+        nackEvent(event);
+        log.error(message + (error != null ? ": " + error.getMessage() : ""));
+        log.debug(message, error);
+    }
+
+    protected void ackEvent(RoutingContext event) {
+        synchronized (event.response()) {
+            if (!event.response().ended()) {
+                if (event.response().getStatusCode() == 200) {
+                    event.response().setStatusCode(202);
+                }
+                event.response().end("ACK");
+            }
+        }
+    }
+
+    protected void nackEvent(RoutingContext event) {
+        synchronized (event.response()) {
+            if (!event.response().ended()) {
+                if (event.response().getStatusCode() == 200) {
+                    event.response().setStatusCode(503);
+                }
+                event.response().end("NACK");
+            }
+        }
+    }
+
+    protected void statusEvent(RoutingContext event) {
+        synchronized (event.response()) {
+            if (!event.response().ended()) {
+                if (event.response().getStatusCode() == 200) {
+                    event.response().setStatusCode(202);
+                }
+                if (!event.response().isChunked()) {
+                    event.response().setChunked(true);
+                }
+                event.response().write("");
+            }
         }
     }
 

@@ -168,7 +168,7 @@ class HttpSourceTest {
     @Test
     void shouldReportFailureOnInvalidJsonAndSucceedOnProperOne() {
         // TODO: change to assert 422 when proper propagation of failures is implemented
-        assertThat(sendAndGetStatus("{\"some\": \"json}", "/json-http-source")).isEqualTo(500);
+        assertThat(sendAndGetStatus("{\"some\": \"json}", "/json-http-source")).isEqualTo(503);
         send("{\"some\": \"json\"}", "/json-http-source");
 
         List<?> payloads = consumer.getPayloads();

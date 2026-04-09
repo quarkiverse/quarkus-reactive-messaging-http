@@ -41,10 +41,10 @@ public class HttpEndpoint {
         consumptionLock.readLock().lock();
         try {
             if (initialFailures.getAndDecrement() > 0) {
-                return Response.status(500).entity("forced failure").build();
+                return Response.status(500).entity("NACK").build();
             }
             requests.add(new Request(body, null, null));
-            return Response.ok().entity("bye").build();
+            return Response.ok().entity("ACK").build();
         } finally {
             consumptionLock.readLock().unlock();
         }

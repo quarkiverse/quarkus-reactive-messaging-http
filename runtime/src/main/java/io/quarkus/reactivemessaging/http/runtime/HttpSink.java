@@ -1,5 +1,7 @@
 package io.quarkus.reactivemessaging.http.runtime;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,15 +20,16 @@ import io.quarkus.reactivemessaging.http.runtime.serializers.Serializer;
 import io.quarkus.reactivemessaging.http.runtime.serializers.SerializerFactoryBase;
 import io.quarkus.tls.TlsConfiguration;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.unchecked.Unchecked;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpVersion;
-import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.mutiny.core.buffer.Buffer;
-import io.vertx.mutiny.ext.web.client.HttpRequest;
-import io.vertx.mutiny.ext.web.client.HttpResponse;
-import io.vertx.mutiny.ext.web.client.WebClient;
+import io.vertx.mutiny.core.http.HttpClient;
+import io.vertx.mutiny.core.http.HttpClientRequest;
+import io.vertx.mutiny.core.http.HttpClientResponse;
 
 class HttpSink extends AbstractSink {
 
@@ -34,7 +37,7 @@ class HttpSink extends AbstractSink {
 
     private static final String[] SUPPORTED_SCHEMES = { "http:", "https:" };
 
-    private final WebClient client;
+    private final HttpClient httpClient;
     private final String method;
     private final String url;
     private final SerializerFactoryBase serializerFactory;
@@ -58,7 +61,7 @@ class HttpSink extends AbstractSink {
         this.serializerFactory = serializerFactory;
         this.serializerName = serializerName;
 
-        WebClientOptions options = new WebClientOptions();
+        HttpClientOptions options = new HttpClientOptions();
         maxPoolSize.ifPresent(options::setMaxPoolSize);
         maxWaitQueueSize.ifPresent(options::setMaxWaitQueueSize);
 
@@ -66,11 +69,10 @@ class HttpSink extends AbstractSink {
 
         options.setProtocolVersion(protocolVersion);
         if (protocolVersion == HttpVersion.HTTP_2 && tlsConfiguration.isPresent()) {
-            // Required for HTTP/2. See https://vertx.io/docs/vertx-core/java/#_creating_an_http_client
             options.setUseAlpn(true);
         }
 
-        client = WebClient.create(io.vertx.mutiny.core.Vertx.newInstance(vertx), options);
+        this.httpClient = new HttpClient(vertx.createHttpClient(options));
 
         if (Arrays.stream(SUPPORTED_SCHEMES).noneMatch(url.toLowerCase()::startsWith)) {
             throw new IllegalArgumentException("Unsupported scheme for the http connector in URL: " + url);
@@ -79,10 +81,10 @@ class HttpSink extends AbstractSink {
 
     @Override
     protected Uni<Void> send(Message<?> message) {
-        HttpRequest<?> request = toHttpRequest(message);
-        return Uni.createFrom().item(message.getPayload())
-                .onItem().transform(this::serialize)
-                .onItem().transformToUni(buffer -> invoke(request, buffer));
+        Uni<HttpClientRequest> request = toHttpRequest(message);
+
+        return request.onItem()
+                .transformToUni(req -> invoke(message, req, serialize(message.getPayload())));
     }
 
     private <T> Buffer serialize(T payload) {
@@ -90,33 +92,48 @@ class HttpSink extends AbstractSink {
         return Buffer.newInstance(serializer.serialize(payload));
     }
 
-    private Uni<Void> invoke(HttpRequest<?> request, Buffer buffer) {
-        log.debugf("Invoking request: ", toString(request, buffer));
-        return request
-                .sendBuffer(buffer)
-                .onItem().transform(Unchecked.function(resp -> {
-                    if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
-                        return null;
-                    } else {
-                        throw new VertxException(
-                                "Http request: " + toString(request) + " failed with response: " + toString(resp));
-                    }
-                }));
+    private Uni<Void> invoke(Message<?> message, HttpClientRequest request, Buffer buffer) {
+        return request.send(buffer).onItem().transform(response -> {
+            response
+                    .toMulti()
+                    .subscribe().with(item -> handleBuffer(message, request, response, item),
+                            message::nack, () -> {});
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                return null;
+            } else {
+                throw new VertxException(
+                        "Http request: " + toString(request) + " failed with response: " + toString(response));
+            }
+        });
     }
 
-    private String toString(HttpRequest<?> req) {
-        return "URI:" + req.uri() + " Method:" + req.method() + " Headers: " + req.headers();
+    private void handleBuffer(Message<?> message, HttpClientRequest request,
+            HttpClientResponse response, Buffer buf) {
+        // TODO: to fix? to make a part of multi
+        String body = buf.toString().strip();
+        if (body.endsWith("NACK")) {
+            message.nack(new VertxException(
+                    "Http request: " + toString(request) + " failed with response: " + toString(
+                            response)));
+        } else if (body.endsWith("ACK")) {
+            message.ack();
+        }
     }
 
-    private String toString(HttpRequest<?> req, Buffer buffer) {
+    private String toString(HttpClientRequest req) {
+        return "URI:" + req.getURI() + " Method:" + req.getMethod() + " Headers: " + req.headers();
+    }
+
+    private String toString(HttpClientRequest req, Buffer buffer) {
         return toString(req) + " Body: " + buffer;
     }
 
-    private String toString(HttpResponse<?> resp) {
+    private String toString(HttpClientResponse resp) {
         return "Code: " + resp.statusCode() + " Message: " + resp.statusMessage();
     }
 
-    private HttpRequest<?> toHttpRequest(Message<?> message) {
+    private Uni<HttpClientRequest> toHttpRequest(Message<?> message) {
         try {
             OutgoingHttpMetadata metadata = message.getMetadata(OutgoingHttpMetadata.class).orElse((OutgoingHttpMetadata) null);
 
@@ -129,13 +146,16 @@ class HttpSink extends AbstractSink {
 
             String url = prepareUrl(pathParams);
 
-            HttpRequest<Buffer> request = createRequest(url);
+            Uni<HttpClientRequest> request = createRequest(url);
 
-            addHeaders(request, httpHeaders);
+            Map<String, List<String>> finalHttpHeaders = httpHeaders;
+            return request
+                    .onItem().transform(req -> {
+                        addHeaders(req, finalHttpHeaders);
+                        addQueryParameters(query, req);
 
-            addQueryParameters(query, request);
-
-            return request;
+                        return req;
+                    });
         } catch (Exception any) {
             log.error("Failed to transform message to http request", any);
             throw any;
@@ -159,24 +179,44 @@ class HttpSink extends AbstractSink {
         }
     }
 
-    private HttpRequest<Buffer> createRequest(String url) {
-        return switch (method) {
-            case "POST" -> client.postAbs(url);
-            case "PUT" -> client.putAbs(url);
+    private Uni<HttpClientRequest> createRequest(String url) {
+        RequestOptions options = new RequestOptions()
+                .setAbsoluteURI(url);
+        switch (method) {
+            case "POST" -> options.setMethod(HttpMethod.POST);
+            case "PUT" -> options.setMethod(HttpMethod.PUT);
             default ->
                 throw new IllegalArgumentException("Unsupported HTTP method: " + method + " only PUT and POST are supported");
-        };
+        }
+
+        return httpClient.request(options);
     }
 
-    private void addQueryParameters(Map<String, List<String>> query, HttpRequest<Buffer> request) {
-        for (Map.Entry<String, List<String>> queryParam : query.entrySet()) {
-            for (String queryParamValue : queryParam.getValue()) {
-                request.addQueryParam(queryParam.getKey(), queryParamValue);
+    private void addQueryParameters(Map<String, List<String>> query, HttpClientRequest request) {
+        if (query == null || query.isEmpty()) {
+            return;
+        }
+
+        String currentUri = request.getURI();
+        StringBuilder sb = new StringBuilder(currentUri);
+        boolean hasQuery = currentUri.contains("?");
+
+        for (Entry<String, List<String>> entry : query.entrySet()) {
+            String key = entry.getKey();
+            for (String value : entry.getValue()) {
+                sb.append(hasQuery ? "&" : "?");
+                hasQuery = true;
+
+                sb.append(URLEncoder.encode(key, StandardCharsets.UTF_8))
+                        .append("=")
+                        .append(URLEncoder.encode(value, StandardCharsets.UTF_8));
             }
         }
+
+        request.setURI(sb.toString());
     }
 
-    private void addHeaders(HttpRequest<Buffer> request, Map<String, List<String>> httpHeaders) {
+    private void addHeaders(HttpClientRequest request, Map<String, List<String>> httpHeaders) {
         if (!httpHeaders.isEmpty()) {
             for (Map.Entry<String, List<String>> header : httpHeaders.entrySet()) {
                 request.putHeader(header.getKey(), header.getValue());

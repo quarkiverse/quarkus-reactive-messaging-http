@@ -35,15 +35,12 @@ abstract class AbstractSink {
                 send = retry.atMost(maxRetries);
             }
 
-            return send
-                    .onItemOrFailure().transformToUni((result, error) -> {
-                        if (error != null) {
-                            return Uni.createFrom().completionStage(
-                                    m.nack(error).thenRun(() -> log.debugf(error, "Error responding to %s", url)));
-                        }
-                        return Uni.createFrom()
-                                .completionStage(m.ack().thenRun(() -> log.tracef("Responded with success to %s", url)));
-                    });
+            return send.onItemOrFailure().transformToUni((result, error) -> {
+                if (error != null) {
+                    return Uni.createFrom().completionStage(m.nack(error));
+                }
+                return Uni.createFrom().voidItem();
+            });
         });
         this.subscriber = MultiUtils.via(processor,
                 m -> m.onFailure().invoke(f -> log.debugf("Unable to dispatch message to %s", url)));

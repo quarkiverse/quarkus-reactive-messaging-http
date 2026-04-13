@@ -87,38 +87,32 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
     }
 
     protected void ackEvent(RoutingContext event) {
-        synchronized (event.response()) {
-            if (!event.response().ended()) {
-                if (event.response().getStatusCode() == 200) {
-                    event.response().setStatusCode(202);
-                }
-                event.response().end("ACK");
+        if (!event.response().ended()) {
+            if (event.response().getStatusCode() == 200) {
+                event.response().setStatusCode(202);
             }
+            event.response().end("ACK");
         }
     }
 
     protected void nackEvent(RoutingContext event) {
-        synchronized (event.response()) {
-            if (!event.response().ended()) {
-                if (event.response().getStatusCode() == 200) {
-                    event.response().setStatusCode(503);
-                }
-                event.response().end("NACK");
+        if (!event.response().ended()) {
+            if (event.response().getStatusCode() == 200) {
+                event.response().setStatusCode(503);
             }
+            event.response().end("NACK");
         }
     }
 
     protected void statusEvent(RoutingContext event) {
-        synchronized (event.response()) {
-            if (!event.response().ended()) {
-                if (event.response().getStatusCode() == 200) {
-                    event.response().setStatusCode(202);
-                }
-                if (!event.response().isChunked()) {
-                    event.response().setChunked(true);
-                }
-                event.response().write("");
+        if (!event.response().ended()) {
+            if (event.response().getStatusCode() == 200) {
+                event.response().setStatusCode(202);
             }
+            if (!event.response().isChunked()) {
+                event.response().setChunked(true);
+            }
+            event.response().write("");
         }
     }
 

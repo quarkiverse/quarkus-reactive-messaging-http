@@ -1,5 +1,5 @@
-:quarkus-version: 3.32.1
-:project-version: 2.7.1
+:quarkus-version: 3.36.0
+:project-version: 2.8.0
 :maven-version: 3.8.1+
 
 :quarkus-org-url: https://github.com/quarkusio

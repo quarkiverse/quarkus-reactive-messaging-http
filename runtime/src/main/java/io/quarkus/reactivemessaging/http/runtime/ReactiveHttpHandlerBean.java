@@ -7,11 +7,15 @@ import jakarta.inject.Singleton;
 
 import org.jboss.logging.Logger;
 
+import io.opentelemetry.context.Context;
 import io.quarkus.reactivemessaging.http.runtime.config.HttpStreamConfig;
 import io.quarkus.reactivemessaging.http.runtime.config.ReactiveHttpConfig;
 import io.quarkus.reactivemessaging.http.runtime.serializers.DeserializerFactoryBase;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.subscription.MultiEmitter;
+import io.smallrye.reactive.messaging.TracingMetadata;
+import io.smallrye.reactive.messaging.providers.locals.ContextAwareMessage;
+import io.smallrye.reactive.messaging.providers.locals.LocalContextMetadata;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.RoutingContext;
 
@@ -55,17 +59,29 @@ public class ReactiveHttpHandlerBean extends ReactiveHandlerBeanBase<HttpStreamC
 
     @Override
     protected void handleRequest(RoutingContext event, MultiEmitter<? super HttpMessage<?>> emitter,
-            StrictQueueSizeGuard guard, String path, String deserializerName) {
+            StrictQueueSizeGuard guard, String path, String deserializerName, boolean tracingEnabled) {
         if (emitter == null) {
             onUnexpectedError(event, null,
                     "No consumer subscribed for messages sent to Reactive Messaging HTTP endpoint on path: " + path);
         } else if (guard.prepareToEmit()) {
             try {
+                // capture the OTel Context and a duplicated Vert.x Context synchronously, while still on the
+                // request's own Vert.x context: both are needed for Quarkus's reactive-messaging OTel decorator
+                // to re-attach tracing downstream, since the request is decoupled from any Vert.x context once
+                // buffered here
+                TracingMetadata tracingMetadata = tracingEnabled
+                        ? TracingMetadata.withCurrent(Context.current())
+                        : null;
+                LocalContextMetadata localContextMetadata = tracingEnabled
+                        ? ContextAwareMessage.captureLocalContextMetadata()
+                        : null;
                 emitter.emit(new HttpMessage<>(
                         deserializerFactory.getDeserializer(deserializerName)
                                 .map(d -> d.deserialize(event.body().buffer()))
                                 .orElse(event.body().buffer()),
                         new IncomingHttpMetadata(event),
+                        tracingMetadata,
+                        localContextMetadata,
                         () -> {
                             if (!event.response().ended()) {
                                 event.response().setStatusCode(202).end();

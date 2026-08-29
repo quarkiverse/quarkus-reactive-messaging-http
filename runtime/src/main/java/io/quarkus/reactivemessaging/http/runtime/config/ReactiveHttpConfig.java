@@ -73,7 +73,10 @@ public class ReactiveHttpConfig {
                 int bufferSize = getConfigProperty(IN_KEY, connectorName, "buffer-size",
                         QuarkusHttpConnector.DEFAULT_SOURCE_BUFFER, Integer.class);
                 String deserializerName = getConfigProperty(IN_KEY, connectorName, "deserializer", null, String.class);
-                streamConfigs.add(new HttpStreamConfig(path, method, connectorName, bufferSize, deserializerName));
+                boolean tracingEnabled = getConfigProperty(IN_KEY, connectorName, "tracing-enabled", Boolean.TRUE,
+                        Boolean.class);
+                streamConfigs.add(
+                        new HttpStreamConfig(path, method, connectorName, bufferSize, deserializerName, tracingEnabled));
             }
         }
         return streamConfigs;

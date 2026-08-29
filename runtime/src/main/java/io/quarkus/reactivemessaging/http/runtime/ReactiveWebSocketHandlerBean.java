@@ -32,7 +32,7 @@ public class ReactiveWebSocketHandlerBean extends ReactiveHandlerBeanBase<WebSoc
 
     @Override
     protected void handleRequest(RoutingContext event, MultiEmitter<? super WebSocketMessage<?>> emitter,
-            StrictQueueSizeGuard guard, String path, String deserializerName) {
+            StrictQueueSizeGuard guard, String path, String deserializerName, boolean tracingEnabled) {
         event.request().toWebSocket(
                 webSocket -> {
                     if (webSocket.failed()) {

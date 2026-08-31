@@ -362,11 +362,82 @@ mp.messaging.incoming.<channelName>.buffer-size=13
 
 === Cloud Event support
 
-The HTTP connector supports binary-mode [cloud event] messages through Metadata.
+The HTTP connector supports binary-mode https://cloudevents.io/[Cloud Event] messages through Metadata.
 
-If incoming HTTP request contains headers of the form `ce-` or `ce_`, a `CloudEventMetadata` instance is included in the `Message` metadata
+== Attributes
 
-If outgoing `Message` metadata includes a `CloudEventMetadata` instance, the information contained there will be added as headers prefixed with `ce-` in the outgoing HTTP request. 
+If an incoming HTTP request contains headers of the form `ce-` or `ce_`, a `CloudEventMetadata` instance is included in the `Message` metadata.
+
+For example, the following request:
+
+[source,httprequest]
+----
+POST localhost:8080/mp/playground/start
+ce-id: cloud-event-id <1>
+ce-source: http://org.acme/store <2>
+ce-type: org.acme.package.sent <3>
+
+{"name": "John Doe", "registration": "REG-2026-001" }
+----
+<1> Sets the CloudEvent `id` to `cloud-event-id`
+<2> Sets the CloudEvent `source` to `http://org.acme/store`
+<3> Sets the CloudEvent `type` to `org.acme.package.sent`
+
+Internally, this HTTP request generates the following CloudEvent, represented in structured-mode JSON:
+
+[source,json]
+----
+{
+  "specversion": "1.0",
+  "id": "cloud-event-id",
+  "source": "http://org.acme/store",
+  "type": "org.acme.package.sent",
+  "datacontenttype": "application/json",
+  "data": {
+    "name": "John Doe",
+    "registration": "REG-2026-001"
+  }
+}
+----
+
+== Extensions
+
+If a header is not a known CloudEvent attribute (e.g., `id`, `type`, `source`, `time`, etc.), the suffix after `ce-`
+(or `ce_`) is treated as an extension attribute.
+
+For example, the header `ce-myextension: custom-value` adds an
+extension named `myextension` with the value `custom-value`.
+
+If the outgoing `Message` metadata includes a `CloudEventMetadata` instance, the information it contains is added as headers prefixed with `ce-` in the outgoing HTTP request. For example, a message carrying a `CloudEventMetadata` with an id, a source, a type and an extension named `myextension` produces the following request:
+
+[source,httprequest]
+----
+POST localhost:8080/cost-collector
+ce-id: cloud-event-id
+ce-source: http://org.acme/store
+ce-type: org.acme.package.sent
+ce-myextension: custom-value
+
+{"value": 12.5, "currency": "USD"}
+----
+
+Internally, this request is generated from the following CloudEvent, represented in structured-mode JSON:
+
+[source,json]
+----
+{
+  "specversion": "1.0",
+  "id": "cloud-event-id",
+  "source": "http://org.acme/store",
+  "type": "org.acme.package.sent",
+  "datacontenttype": "application/json",
+  "myextension": "custom-value",
+  "data": {
+    "value": 12.5,
+    "currency": "USD"
+  }
+}
+----
 
 === Reactive Messaging
 This extension utilizes SmallRye Reactive Messaging to build data streaming applications.

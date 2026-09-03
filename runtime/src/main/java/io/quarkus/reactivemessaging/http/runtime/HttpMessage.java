@@ -9,6 +9,9 @@ import java.util.function.Supplier;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Metadata;
 
+import io.smallrye.reactive.messaging.TracingMetadata;
+import io.smallrye.reactive.messaging.providers.locals.LocalContextMetadata;
+
 /**
  * used by http source
  *
@@ -21,13 +24,21 @@ class HttpMessage<T> implements Message<T> {
     private final Consumer<Throwable> failureHandler;
     private final Metadata metadata;
 
-    HttpMessage(T payload, IncomingHttpMetadata requestMetadata, Runnable successHandler,
-            Consumer<Throwable> failureHandler) {
+    HttpMessage(T payload, IncomingHttpMetadata requestMetadata, TracingMetadata tracingMetadata,
+            LocalContextMetadata localContextMetadata, Runnable successHandler, Consumer<Throwable> failureHandler) {
         this.payload = payload;
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
-        this.metadata = HttpCloudEventHelper.getBinaryCloudEvent(requestMetadata).map(m -> Metadata.of(requestMetadata, m))
+        Metadata baseMetadata = HttpCloudEventHelper.getBinaryCloudEvent(requestMetadata)
+                .map(m -> Metadata.of(requestMetadata, m))
                 .orElse(Metadata.of(requestMetadata));
+        if (tracingMetadata != null) {
+            baseMetadata = baseMetadata.with(tracingMetadata);
+        }
+        if (localContextMetadata != null) {
+            baseMetadata = baseMetadata.with(localContextMetadata);
+        }
+        this.metadata = baseMetadata;
     }
 
     @Override

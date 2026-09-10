@@ -56,6 +56,7 @@ import io.vertx.core.http.HttpVersion;
 @ConnectorAttribute(name = "path", type = "string", direction = INCOMING, description = "The path of the endpoint", mandatory = true)
 @ConnectorAttribute(name = "buffer-size", type = "string", direction = INCOMING, description = "HTTP endpoint buffers messages if a consumer is not able to keep up. This setting specifies the size of the buffer.", defaultValue = QuarkusHttpConnector.DEFAULT_SOURCE_BUFFER_STR)
 @ConnectorAttribute(name = "broadcast", type = "boolean", direction = INCOMING, description = "Whether the messages should be dispatched to multiple consumers", defaultValue = "false")
+@ConnectorAttribute(name = "tracing-enabled", type = "boolean", direction = INCOMING, description = "Whether tracing is enabled (default) or disabled", defaultValue = "true")
 
 @Connector(QuarkusHttpConnector.NAME)
 @ApplicationScoped

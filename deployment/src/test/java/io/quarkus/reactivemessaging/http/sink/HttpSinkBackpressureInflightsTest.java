@@ -23,14 +23,14 @@ import io.quarkus.reactivemessaging.http.sink.app.Dto;
 import io.quarkus.reactivemessaging.http.sink.app.HttpEmitterWithOverflow;
 import io.quarkus.reactivemessaging.http.sink.app.HttpEndpoint;
 import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 class HttpSinkBackpressureInflightsTest {
 
     private static final int MAX_INFLIGHT_MESSAGES = 1000; // same as in test properties
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
+    static final QuarkusExtensionTest config = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(ToUpperCaseSerializer.class, Dto.class, HttpEmitterWithOverflow.class,
                             HttpEndpoint.class))

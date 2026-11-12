@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
 import io.quarkus.reactivemessaging.websocket.sink.app.WebSocketEmitter;
 import io.quarkus.reactivemessaging.websocket.sink.app.WebSocketEndpoint;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -28,7 +28,7 @@ class WebSocketSinkTest {
     private static final Logger log = Logger.getLogger(WebSocketSinkTest.class);
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
+    static final QuarkusExtensionTest config = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(WebSocketEndpoint.class, WebSocketEmitter.class, ToUpperCaseSerializer.class))
             .withConfigurationResource("websocket-sink-test-application.properties");

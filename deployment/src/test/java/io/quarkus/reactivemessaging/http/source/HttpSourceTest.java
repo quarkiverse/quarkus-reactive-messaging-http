@@ -30,7 +30,7 @@ import io.quarkus.reactivemessaging.http.runtime.IncomingHttpMetadata;
 import io.quarkus.reactivemessaging.http.runtime.RequestMetadata;
 import io.quarkus.reactivemessaging.http.source.app.Consumer;
 import io.quarkus.reactivemessaging.utils.VertxFriendlyLock;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.restassured.response.ValidatableResponse;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpMethod;
@@ -40,7 +40,7 @@ import io.vertx.core.json.JsonObject;
 class HttpSourceTest {
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
+    static final QuarkusExtensionTest config = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(Consumer.class, VertxFriendlyLock.class))
             .withConfigurationResource("http-source-test-application.properties");

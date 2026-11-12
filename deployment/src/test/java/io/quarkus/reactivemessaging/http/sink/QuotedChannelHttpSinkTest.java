@@ -17,7 +17,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.reactivemessaging.http.sink.app.HttpEndpoint;
 import io.quarkus.reactivemessaging.http.sink.app.QuotedChannelHttpEmitter;
 import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 class QuotedChannelHttpSinkTest {
 
@@ -28,7 +28,7 @@ class QuotedChannelHttpSinkTest {
     QuotedChannelHttpEmitter emitter;
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
+    static final QuarkusExtensionTest config = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(QuotedChannelHttpEmitter.class, HttpEndpoint.class, ToUpperCaseSerializer.class))
             .withConfigurationResource("http-sink-quoted-channel-test-application.properties");

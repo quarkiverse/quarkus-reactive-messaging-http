@@ -4,8 +4,9 @@ import java.util.Optional;
 
 import io.quarkus.tls.TlsConfiguration;
 import io.quarkus.tls.TlsConfigurationRegistry;
-import io.vertx.core.net.ClientOptionsBase;
-import io.vertx.core.net.SSLOptions;
+import io.quarkus.tls.runtime.config.TlsConfigUtils;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.WebSocketClientOptions;
 
 public class TlsConfig {
 
@@ -15,35 +16,11 @@ public class TlsConfig {
                 .orElseGet(() -> tlsRegistry.flatMap(TlsConfigurationRegistry::getDefault));
     }
 
-    public static void configure(ClientOptionsBase options, TlsConfiguration tlsConfiguration) {
-        options.setSsl(true);
+    public static void configure(HttpClientOptions options, TlsConfiguration tlsConfiguration) {
+        TlsConfigUtils.configure(options, tlsConfiguration);
+    }
 
-        if (tlsConfiguration.getTrustStoreOptions() != null) {
-            options.setTrustOptions(tlsConfiguration.getTrustStoreOptions());
-        }
-
-        // For mTLS:
-        if (tlsConfiguration.getKeyStoreOptions() != null) {
-            options.setKeyCertOptions(tlsConfiguration.getKeyStoreOptions());
-        }
-
-        if (tlsConfiguration.isTrustAll()) {
-            options.setTrustAll(true);
-        }
-
-        SSLOptions sslOptions = tlsConfiguration.getSSLOptions();
-        if (sslOptions != null) {
-            options.setSslHandshakeTimeout(sslOptions.getSslHandshakeTimeout());
-            options.setSslHandshakeTimeoutUnit(sslOptions.getSslHandshakeTimeoutUnit());
-            for (String suite : sslOptions.getEnabledCipherSuites()) {
-                options.addEnabledCipherSuite(suite);
-            }
-            for (io.vertx.core.buffer.Buffer buffer : sslOptions.getCrlValues()) {
-                options.addCrlValue(buffer);
-            }
-            options.setEnabledSecureTransportProtocols(sslOptions.getEnabledSecureTransportProtocols());
-
-        }
-
+    public static void configure(WebSocketClientOptions options, TlsConfiguration tlsConfiguration) {
+        TlsConfigUtils.configure(options, tlsConfiguration);
     }
 }

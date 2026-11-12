@@ -177,7 +177,7 @@ class WebSocketSourceTest {
     @AfterAll
     static void tearDown() throws InterruptedException {
         CountDownLatch shutdownLatch = new CountDownLatch(1);
-        vertx.close(ignored -> shutdownLatch.countDown());
+        vertx.close().onComplete(ignored -> shutdownLatch.countDown());
         shutdownLatch.await(10, TimeUnit.SECONDS);
     }
 }

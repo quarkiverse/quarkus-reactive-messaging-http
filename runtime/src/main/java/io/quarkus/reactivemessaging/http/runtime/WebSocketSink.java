@@ -66,7 +66,7 @@ class WebSocketSink extends AbstractSink {
 
     private void connect(WebSocketConnectOptions options, Handler<AsyncResult<WebSocket>> handler) {
         log.debug("using a new web socket connection");
-        webSocketClient.connect(options, connectResult -> {
+        webSocketClient.connect(options).onComplete(connectResult -> {
             if (connectResult.succeeded()) {
                 WebSocket result = connectResult.result();
                 WebSocket oldWs = websocket.getAndSet(result);
@@ -121,7 +121,7 @@ class WebSocketSink extends AbstractSink {
 
     private void _send(WebSocket webSocket, Buffer serialized, Handler<AsyncResult<Void>> handler) {
         log.debug("sending out the message");
-        webSocket.write(serialized, writeResult -> {
+        webSocket.write(serialized).onComplete(writeResult -> {
             if (writeResult.succeeded()) {
                 log.debug("success");
             } else {

@@ -18,14 +18,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import io.quarkus.reactivemessaging.http.tracing.app.ChainedHttpProcessor;
 import io.quarkus.reactivemessaging.http.tracing.app.TraceCapturingEndpoint;
 import io.quarkus.reactivemessaging.http.tracing.app.TracingSourceConsumer;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 
 class TracingSourceTest {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
+    static final QuarkusExtensionTest config = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TracingSourceConsumer.class, ChainedHttpProcessor.class, TraceCapturingEndpoint.class))
             .withConfigurationResource("tracing-test-application.properties");

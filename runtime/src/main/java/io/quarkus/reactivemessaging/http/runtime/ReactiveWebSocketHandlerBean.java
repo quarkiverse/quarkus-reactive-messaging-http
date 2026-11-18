@@ -33,7 +33,7 @@ public class ReactiveWebSocketHandlerBean extends ReactiveHandlerBeanBase<WebSoc
     @Override
     protected void handleRequest(RoutingContext event, MultiEmitter<? super WebSocketMessage<?>> emitter,
             StrictQueueSizeGuard guard, String path, String deserializerName, boolean tracingEnabled) {
-        event.request().toWebSocket(
+        event.request().toWebSocket().onComplete(
                 webSocket -> {
                     if (webSocket.failed()) {
                         log(webSocket.cause(), "failed to connect web socket");

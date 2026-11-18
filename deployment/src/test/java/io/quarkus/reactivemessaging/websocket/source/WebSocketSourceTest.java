@@ -26,7 +26,7 @@ import io.quarkus.reactivemessaging.http.runtime.RequestMetadata;
 import io.quarkus.reactivemessaging.utils.VertxFriendlyLock;
 import io.quarkus.reactivemessaging.websocket.WebSocketClient;
 import io.quarkus.reactivemessaging.websocket.source.app.Consumer;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.quarkus.test.common.http.TestHTTPResource;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
@@ -37,7 +37,7 @@ class WebSocketSourceTest {
     private static WebSocketClient client;
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
+    static final QuarkusExtensionTest config = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(Consumer.class, WebSocketClient.class, VertxFriendlyLock.class))
             .withConfigurationResource("websocket-source-test-application.properties");
@@ -177,7 +177,7 @@ class WebSocketSourceTest {
     @AfterAll
     static void tearDown() throws InterruptedException {
         CountDownLatch shutdownLatch = new CountDownLatch(1);
-        vertx.close(ignored -> shutdownLatch.countDown());
+        vertx.close().onComplete(ignored -> shutdownLatch.countDown());
         shutdownLatch.await(10, TimeUnit.SECONDS);
     }
 }

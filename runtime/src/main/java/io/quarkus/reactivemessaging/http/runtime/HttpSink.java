@@ -21,12 +21,13 @@ import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpVersion;
+import io.vertx.core.http.PoolOptions;
+import io.vertx.ext.web.client.HttpRequest;
+import io.vertx.ext.web.client.HttpResponse;
+import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
-import io.vertx.mutiny.core.buffer.Buffer;
-import io.vertx.mutiny.ext.web.client.HttpRequest;
-import io.vertx.mutiny.ext.web.client.HttpResponse;
-import io.vertx.mutiny.ext.web.client.WebClient;
 
 class HttpSink extends AbstractSink {
 
@@ -59,8 +60,9 @@ class HttpSink extends AbstractSink {
         this.serializerName = serializerName;
 
         WebClientOptions options = new WebClientOptions();
-        maxPoolSize.ifPresent(options::setMaxPoolSize);
-        maxWaitQueueSize.ifPresent(options::setMaxWaitQueueSize);
+        PoolOptions poolOptions = new PoolOptions();
+        maxPoolSize.ifPresent(poolOptions::setHttp1MaxSize);
+        maxWaitQueueSize.ifPresent(poolOptions::setMaxWaitQueueSize);
 
         tlsConfiguration.ifPresent(config -> TlsConfig.configure(options, config));
 
@@ -70,7 +72,7 @@ class HttpSink extends AbstractSink {
             options.setUseAlpn(true);
         }
 
-        client = WebClient.create(io.vertx.mutiny.core.Vertx.newInstance(vertx), options);
+        client = WebClient.wrap(vertx.createHttpClient(options, poolOptions), options);
 
         if (Arrays.stream(SUPPORTED_SCHEMES).noneMatch(url.toLowerCase()::startsWith)) {
             throw new IllegalArgumentException("Unsupported scheme for the http connector in URL: " + url);
@@ -87,13 +89,12 @@ class HttpSink extends AbstractSink {
 
     private <T> Buffer serialize(T payload) {
         Serializer<T> serializer = serializerFactory.getSerializer(serializerName, payload);
-        return Buffer.newInstance(serializer.serialize(payload));
+        return serializer.serialize(payload);
     }
 
     private Uni<Void> invoke(HttpRequest<?> request, Buffer buffer) {
         log.debugf("Invoking request: ", toString(request, buffer));
-        return request
-                .sendBuffer(buffer)
+        return Uni.createFrom().completionStage(() -> request.sendBuffer(buffer).toCompletionStage())
                 .onItem().transform(Unchecked.function(resp -> {
                     if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
                         return null;

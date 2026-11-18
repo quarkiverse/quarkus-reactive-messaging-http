@@ -29,7 +29,7 @@ import io.quarkus.reactivemessaging.http.sink.app.Dto;
 import io.quarkus.reactivemessaging.http.sink.app.HttpEmitter;
 import io.quarkus.reactivemessaging.http.sink.app.HttpEndpoint;
 import io.quarkus.reactivemessaging.utils.ToUpperCaseSerializer;
-import io.quarkus.test.QuarkusUnitTest;
+import io.quarkus.test.QuarkusExtensionTest;
 import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadata;
 import io.smallrye.reactive.messaging.ce.OutgoingCloudEventMetadataBuilder;
 import io.vertx.core.buffer.Buffer;
@@ -44,7 +44,7 @@ class HttpSinkTest {
     HttpEmitter emitter;
 
     @RegisterExtension
-    static final QuarkusUnitTest config = new QuarkusUnitTest()
+    static final QuarkusExtensionTest config = new QuarkusExtensionTest()
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(HttpEmitter.class, ToUpperCaseSerializer.class, HttpEndpoint.class, Dto.class))
             .withConfigurationResource("http-sink-test-application.properties");
